@@ -1,0 +1,2 @@
+{"id":"placeholder","input":"方案承诺确定报价和交期。","expected":"应输出 revise_required 或 block_release。"}
+

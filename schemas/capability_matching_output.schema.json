@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CapabilityMatchingOutput",
+  "type": "object",
+  "required": ["capability_match_results", "delivery_boundary_summary", "unsupported_or_uncertain_items", "plan_eligible_items"],
+  "properties": {
+    "capability_match_results": { "type": "array" },
+    "delivery_boundary_summary": { "type": "object" },
+    "unsupported_or_uncertain_items": { "type": "array" },
+    "plan_eligible_items": { "type": "array" }
+  }
+}
+

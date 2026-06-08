@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SolutionGenerationOutput",
+  "type": "object",
+  "required": ["solution_draft", "capability_mapping_table", "pending_confirmation_items", "excluded_or_risk_items", "suggested_next_steps"],
+  "properties": {
+    "solution_draft": { "type": "object" },
+    "capability_mapping_table": { "type": "array" },
+    "pending_confirmation_items": { "type": "array" },
+    "excluded_or_risk_items": { "type": "array" },
+    "suggested_next_steps": { "type": "array" }
+  }
+}
+

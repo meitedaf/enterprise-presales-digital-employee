@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RiskCheckOutput",
+  "type": "object",
+  "required": ["risk_check_result", "risk_summary", "risk_items", "final_output_guidance"],
+  "properties": {
+    "risk_check_result": { "type": "string", "enum": ["pass", "pass_with_notes", "revise_required", "block_release"] },
+    "risk_summary": { "type": "string" },
+    "risk_items": { "type": "array" },
+    "missing_confirmation_items": { "type": "array" },
+    "unsupported_claims": { "type": "array" },
+    "revision_suggestions": { "type": "array" },
+    "final_output_guidance": { "type": "object" }
+  }
+}
+

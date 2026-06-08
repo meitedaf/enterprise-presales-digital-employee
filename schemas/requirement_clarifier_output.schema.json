@@ -1,0 +1,101 @@
+{
+  "type": "object",
+  "properties": {
+    "structured_requirement": {
+      "type": "object",
+      "properties": {
+        "business_goal": {
+          "type": "string"
+        },
+        "scenario": {
+          "type": "string"
+        },
+        "target_users": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "functional_requirements": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "deployment_requirement": {
+          "type": "string"
+        },
+        "integration_requirements": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "business_goal",
+        "scenario",
+        "target_users",
+        "functional_requirements",
+        "deployment_requirement",
+        "integration_requirements"
+      ]
+    },
+    "search_questions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "requirement_item": {
+            "type": "string"
+          },
+          "query": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "requirement_item",
+          "query"
+        ]
+      }
+    },
+    "clarification": {
+      "type": "object",
+      "properties": {
+        "missing_fields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "questions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "missing_fields",
+        "questions"
+      ]
+    },
+    "route_decision": {
+      "type": "string",
+      "enum": [
+        "need_follow_up",
+        "technical_matching"
+      ]
+    },
+    "route_reason": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "structured_requirement",
+    "search_questions",
+    "clarification",
+    "route_decision",
+    "route_reason"
+  ]
+}
