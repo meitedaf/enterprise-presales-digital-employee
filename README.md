@@ -41,42 +41,48 @@
 
 ## 核心流程
 
-text 售前人员输入客户需求 / 沟通记录 / 会议纪要摘要
-         |
-         v
-需求梳理 Agent 输出：structured_requirement + search_questions + clarification + route_decision         
-         |         
-         v 
-格式化需求与检索问题 Code 节点 输出：structured_requirement_text + search_questions_text + search_question_items         
-         |         
-         v
-更新需求会话状态 保存：requirement_state + requirement_state_text + missing_fields_state + last_route_decision         
-         |
-         v 
-条件判断 
-├── need_follow_up 
-│   └── 输出待客户确认问题，等待下一轮补充 
+```text
+售前人员输入客户需求 / 沟通记录 / 会议纪要摘要
+        |
+        v
+需求梳理 Agent
+输出：structured_requirement + search_questions + clarification + route_decision
+        |
+        v
+格式化需求与检索问题 Code 节点
+输出：structured_requirement_text + search_questions_text + search_question_items
+        |
+        v
+更新需求会话状态
+保存：requirement_state + requirement_state_text + missing_fields_state + last_route_decision
+        |
+        v
+条件判断
+├── need_follow_up
+│   └── 输出待客户确认问题
+│       等待售前人员下一轮补充客户信息
 │
 └── technical_matching
-     └── 进入证据检索与方案生成流程
-         |
-         v 
-逐项知识检索         
-         |
-         v 
+    └── 进入证据检索与方案生成流程
+        |
+        v
+逐项知识检索
+        |
+        v
 证据检索 Agent
-         |
-         v 
+        |
+        v
 能力匹配评估 Agent
-         |
-         v
+        |
+        v
 方案生成 Agent
-         |
-         v 
+        |
+        v
 风险校验 Agent
-         |
-         v 
-最终安全方案输出 
+        |
+        v
+最终安全方案输出
+```
 
 ---
 
