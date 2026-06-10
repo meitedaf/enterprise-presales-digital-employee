@@ -1,16 +1,89 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "RiskCheckOutput",
   "type": "object",
-  "required": ["risk_check_result", "risk_summary", "risk_items", "final_output_guidance"],
   "properties": {
-    "risk_check_result": { "type": "string", "enum": ["pass", "pass_with_notes", "revise_required", "block_release"] },
-    "risk_summary": { "type": "string" },
-    "risk_items": { "type": "array" },
-    "missing_confirmation_items": { "type": "array" },
-    "unsupported_claims": { "type": "array" },
-    "revision_suggestions": { "type": "array" },
-    "final_output_guidance": { "type": "object" }
-  }
+    "risk_check_result": {
+      "type": "object",
+      "properties": {
+        "passed": {
+          "type": "boolean"
+        },
+        "risk_level": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "blocked"
+          ]
+        },
+        "must_block_output": {
+          "type": "boolean"
+        },
+        "issues": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "issue_type": {
+                "type": "string",
+                "enum": [
+                  "over_commitment",
+                  "unsupported_claim",
+                  "support_level_mismatch",
+                  "missing_dependency",
+                  "missing_human_confirmation",
+                  "missing_risk_note",
+                  "unsafe_expression",
+                  "evidence_mismatch",
+                  "format_issue",
+                  "other"
+                ]
+              },
+              "severity": {
+                "type": "string",
+                "enum": [
+                  "low",
+                  "medium",
+                  "high"
+                ]
+              },
+              "original_text": {
+                "type": "string"
+              },
+              "reason": {
+                "type": "string"
+              },
+              "suggested_fix": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "issue_type",
+              "severity",
+              "original_text",
+              "reason",
+              "suggested_fix"
+            ]
+          }
+        },
+        "summary": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "passed",
+        "risk_level",
+        "must_block_output",
+        "issues",
+        "summary"
+      ]
+    },
+    "final_safe_response": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "risk_check_result",
+    "final_safe_response"
+  ]
 }
-

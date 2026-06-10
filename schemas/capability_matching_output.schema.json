@@ -1,13 +1,159 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "CapabilityMatchingOutput",
   "type": "object",
-  "required": ["capability_match_results", "delivery_boundary_summary", "unsupported_or_uncertain_items", "plan_eligible_items"],
   "properties": {
-    "capability_match_results": { "type": "array" },
-    "delivery_boundary_summary": { "type": "object" },
-    "unsupported_or_uncertain_items": { "type": "array" },
-    "plan_eligible_items": { "type": "array" }
-  }
+    "capability_assessments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "requirement_item": {
+            "type": "string"
+          },
+          "support_level": {
+            "type": "string",
+            "enum": [
+              "standard_supported",
+              "configurable_supported",
+              "integration_required",
+              "needs_human_confirmation",
+              "not_supported_or_no_evidence"
+            ]
+          },
+          "assessment_summary": {
+            "type": "string"
+          },
+          "basis": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "delivery_boundaries": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "technical_dependencies": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "pricing_notes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "human_confirmation_required": {
+            "type": "boolean"
+          },
+          "human_confirmation_items": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "risk_flags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "plan_expression": {
+            "type": "string"
+          },
+          "plan_eligible": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "requirement_item",
+          "support_level",
+          "assessment_summary",
+          "basis",
+          "delivery_boundaries",
+          "technical_dependencies",
+          "pricing_notes",
+          "human_confirmation_required",
+          "human_confirmation_items",
+          "risk_flags",
+          "plan_expression",
+          "plan_eligible"
+        ]
+      }
+    },
+    "assessment_summary": {
+      "type": "object",
+      "properties": {
+        "standard_supported_items": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "configurable_supported_items": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "integration_required_items": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "needs_human_confirmation_items": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "not_supported_or_no_evidence_items": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "overall_risk_flags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "plan_eligible_items": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "blocked_items": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "recommended_next_step": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "standard_supported_items",
+        "configurable_supported_items",
+        "integration_required_items",
+        "needs_human_confirmation_items",
+        "not_supported_or_no_evidence_items",
+        "overall_risk_flags",
+        "plan_eligible_items",
+        "blocked_items",
+        "recommended_next_step"
+      ]
+    }
+  },
+  "required": [
+    "capability_assessments",
+    "assessment_summary"
+  ]
 }
-

@@ -1,14 +1,155 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "SolutionGenerationOutput",
   "type": "object",
-  "required": ["solution_draft", "capability_mapping_table", "pending_confirmation_items", "excluded_or_risk_items", "suggested_next_steps"],
   "properties": {
-    "solution_draft": { "type": "object" },
-    "capability_mapping_table": { "type": "array" },
-    "pending_confirmation_items": { "type": "array" },
-    "excluded_or_risk_items": { "type": "array" },
-    "suggested_next_steps": { "type": "array" }
-  }
+    "proposal_json": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "customer_requirement_summary": {
+          "type": "string"
+        },
+        "solution_overview": {
+          "type": "string"
+        },
+        "recommended_capabilities": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "capability": {
+                "type": "string"
+              },
+              "support_level": {
+                "type": "string",
+                "enum": [
+                  "standard_supported",
+                  "configurable_supported",
+                  "integration_required",
+                  "needs_human_confirmation",
+                  "not_supported_or_no_evidence"
+                ]
+              },
+              "description": {
+                "type": "string"
+              },
+              "safe_expression": {
+                "type": "string"
+              },
+              "dependencies": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "boundaries": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "evidence_basis": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "capability",
+              "support_level",
+              "description",
+              "safe_expression",
+              "dependencies",
+              "boundaries",
+              "evidence_basis"
+            ]
+          }
+        },
+        "integration_plan": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "system": {
+                "type": "string"
+              },
+              "purpose": {
+                "type": "string"
+              },
+              "dependency": {
+                "type": "string"
+              },
+              "customer_required_inputs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "risk_note": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "system",
+              "purpose",
+              "dependency",
+              "customer_required_inputs",
+              "risk_note"
+            ]
+          }
+        },
+        "deployment_notes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "delivery_boundaries": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "human_confirmation_items": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "risk_notes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "excluded_or_unconfirmed_items": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "title",
+        "customer_requirement_summary",
+        "solution_overview",
+        "recommended_capabilities",
+        "integration_plan",
+        "deployment_notes",
+        "delivery_boundaries",
+        "human_confirmation_items",
+        "risk_notes",
+        "excluded_or_unconfirmed_items"
+      ]
+    },
+    "proposal_text_draft": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "proposal_json",
+    "proposal_text_draft"
+  ]
 }
-
