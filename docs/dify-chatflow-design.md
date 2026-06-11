@@ -2,16 +2,24 @@
 
 ## 1. 当前实现目标
 
-本 Chatflow 用于实现“企业售前数字员工”的 MVP 流程。直接使用者是销售、售前顾问或解决方案团队成员，不是终端客户本人。Start 节点接收的是售前人员输入的客户需求描述、客户沟通记录、会议纪要摘要或补充信息。
+本 Chatflow 用于实现“企业售前数字员工”的 MVP 流程。
+
+当前产品定位为“售前内部 Copilot”。直接使用者是销售、售前顾问或解决方案团队成员，不是终端客户本人。Start 节点接收的是售前人员输入的客户需求描述、客户沟通记录、会议纪要摘要或补充客户信息。
+
+本 Chatflow 的目标是：
 
 1. 将售前人员输入的客户需求描述、客户沟通记录或会议纪要摘要转化为结构化需求。
 2. 支持多轮追问和需求补齐。
-3. 将完整需求拆分为可检索问题。
-4. 对每个 search_question 单独进行知识库检索。
-5. 基于逐项检索结果生成 evidence_results 和 retrieval_summary。
-6. 为后续能力匹配评估、方案生成和风险校验提供证据基础。
+3. 在信息不足时暂停后续流程，输出售前人员需向客户进一步确认的问题。
+4. 将完整需求拆分为逐项可检索问题。
+5. 对每个 search_question 单独进行知识库检索。
+6. 基于逐项检索结果生成 evidence_results 和 retrieval_summary。
+7. 基于证据结果评估产品能力支持等级、技术依赖、交付边界和人工确认项。
+8. 基于结构化需求、证据和能力匹配结果生成售前可审核的初版方案。
+9. 在最终输出前进行风险校验，检查过度承诺、无证据能力、系统依赖遗漏、人工确认项遗漏和支持等级表达错误。
+10. 最终输出面向售前人员的安全方案文本，不暴露中间 JSON。
 
-当前阶段主要完成：
+当前阶段已完成：
 
 - 需求梳理 Agent
 - 多轮会话状态保存
@@ -20,9 +28,10 @@
 - 证据检索 Agent
 - 能力匹配评估 Agent
 - 方案生成 Agent
-- 调试输出 solution_generation_output
-
-风险校验 Agent 和最终汇总输出后续继续接入。
+- 风险校验 Agent
+- 最终安全方案输出
+- 分模块测试
+- 端到端 E2E 测试
 
 ---
 
@@ -45,46 +54,50 @@ Start
   |
   v
 判断需求是否完整 If/Else
-  ├── need_follow_up
-  │       |
-  │       v
-  │     输出待客户确认问题 Answer
-  │     输出：clarification.questions
-  │     暂停本轮流程，等待售前人员下一轮补充客户信息
-  │
-  └── technical_matching
-          |
-          v
-        逐项检索问题循环 Iteration
-        输入：search_question_items
-          |
-          v
-        单需求项知识检索 Knowledge Retrieval
-        每个 search_question 单独检索知识库
-          |
-          v
-        格式化单项检索结果 Code 节点
-        输出：single_retrieval_text
-          |
-          v
-        合并全部检索结果 Code 节点
-        输出：evidence_context_text + retrieval_group_count
-          |
-          v
-        证据检索 Agent
-        输出：evidence_results + retrieval_summary
-          |
-          v
-        能力匹配评估 Agent
-        输出：capability_match_results + delivery_boundary_summary + plan_eligible_items
-          |
-          v
-        方案生成 Agent
-        输出：solution_draft + capability_mapping_table + pending_confirmation_items
-          |
-          v
-        调试输出方案生成结果 Answer
-        当前用于验证方案生成效果，后续接入风险校验 Agent 和最终汇总输出
+├── need_follow_up
+│   |
+│   v
+│ 追问缺失信息 Answer
+│ 输出：clarification.questions
+│ 暂停本轮流程，等待售前人员下一轮补充客户信息
+│
+└── technical_matching
+    |
+    v
+  逐项检索问题循环 Iteration
+  输入：search_question_items
+    |
+    v
+  单需求项知识检索 Knowledge Retrieval
+  每个 search_question 单独检索知识库
+    |
+    v
+  格式化单项检索结果 Code 节点
+  输出：single_retrieval_text
+    |
+    v
+  合并全部检索结果 Code 节点
+  输出：evidence_context_text + retrieval_group_count
+    |
+    v
+  证据检索 Agent
+  输出：evidence_results + retrieval_summary
+    |
+    v
+  能力匹配评估 Agent
+  输出：capability_assessments + assessment_summary
+    |
+    v
+  方案生成 Agent
+  输出：proposal_json + proposal_text_draft
+    |
+    v
+  风险校验 Agent
+  输出：risk_check_result + final_safe_response
+    |
+    v
+  最终安全方案输出 Answer
+  输出：final_safe_response
 ```
 
 ---
@@ -98,15 +111,16 @@ Start
 | Code                | 格式化需求与检索问题 | 将 structured_requirement 转文本，将 search_questions 转为文本和可迭代数组 |
 | Variable Assigner   | 更新需求会话状态     | 保存多轮状态变量                                                           |
 | If/Else             | 判断需求是否完整     | 根据 route_decision 进入追问或证据检索                                     |
-| Answer              | 输出待客户确认问题   | 输出 clarification.questions，暂停本轮流程，等待售前人员补充客户信息       |
+| Answer              | 追问缺失信息         | 输出 clarification.questions，暂停本轮流程，等待售前人员补充客户信息       |
 | Iteration           | 逐项检索问题循环     | 遍历 search_question_items                                                 |
 | Knowledge Retrieval | 单需求项知识检索     | 对当前 search_question 单独检索知识库                                      |
 | Code                | 格式化单项检索结果   | 将单次检索结果转成 single_retrieval_text                                   |
 | Code                | 合并全部检索结果     | 合并 Iteration 输出，生成 evidence_context_text                            |
 | LLM                 | 证据检索 Agent       | 基于 evidence_context_text 输出 evidence_results 和 retrieval_summary      |
-| LLM                 | 能力匹配评估 Agent   | 基于 evidence_results 生成能力支持等级、交付边界和待确认项                 |
-| LLM                 | 方案生成 Agent       | 基于能力匹配结果生成售前可审核的初版方案                                   |
-| Answer              | 调试输出方案结果     | 临时输出方案生成结果，后续会替换为风险校验和最终汇总输出                   |
+| LLM                 | 能力匹配评估 Agent   | 基于 evidence_results 生成能力支持等级、交付边界、技术依赖和待确认项       |
+| LLM                 | 方案生成 Agent       | 基于结构化需求、证据和能力匹配结果生成售前可审核的初版方案                 |
+| LLM                 | 风险校验 Agent       | 检查方案中的过度承诺、无证据能力、支持等级错误、依赖遗漏和人工确认项遗漏   |
+| Answer              | 最终安全方案输出     | 只输出风险校验后的 final_safe_response                                     |
 
 ---
 
@@ -132,7 +146,7 @@ Chatflow 不在同一轮流程中等待售前人员补充客户信息。
 3. 售前人员下一轮补充客户信息。
 4. Chatflow 重新从 Start 执行。
 5. 需求梳理 Agent 读取 requirement_state_text、missing_fields_state 和 last_route_decision。
-6. Agent 将历史已确认信息与本轮输入合并后重新判断 required_fields 是否完整。
+6. Agent 将历史已确认信息与本轮输入合并后，重新判断 required_fields 是否完整。
 
 ---
 
@@ -175,16 +189,30 @@ Chatflow 不在同一轮流程中等待售前人员补充客户信息。
 ### 当前 Prompt 版本
 
 ```text
-prompts/01_requirement_clarifier_prompt.md v0.4
+prompts/01_requirement_clarifier_prompt/requirement_clarifier_prompt_v0.5.md
 ```
-
-定位修正后，需求梳理 Prompt 应升级为 v0.5：明确直接使用者是售前人员，用户输入通常是客户需求转述、沟通记录或会议纪要摘要；need_follow_up 分支输出“售前需向客户确认的问题”，而不是直接面向终端客户追问。
 
 ### 当前 Schema 版本
 
 ```text
-schemas/requirement_clarifier_output.schema.json v0.1 / v0.2
+schemas/requirement_clarifier_output.schema.json
 ```
+
+### 关键规则
+
+- 用户输入应理解为售前人员输入的客户需求描述或补充信息。
+- 不应将“请帮我梳理需求”“帮我看看”等售前操作意图写入客户需求字段。
+- 信息不足时：
+  - route_decision = need_follow_up
+  - search_questions = []
+  - 输出面向售前人员的追问，例如“请向客户确认 / 请补充客户信息”
+- 信息完整时：
+  - route_decision = technical_matching
+  - search_questions 必须非空
+  - 检索问题应覆盖功能需求、部署要求和系统对接需求
+- 如果客户明确不需要系统对接：
+  - integration_requirements = ["no_need"]
+  - 不应为 no_need 生成系统对接类 search_question
 
 说明：Dify 对复杂 JSON Schema 条件约束支持有限，因此 route_decision 与 search_questions 的跨字段一致性主要通过 Prompt 和后续流程 Guardrail 控制。
 
@@ -198,9 +226,9 @@ schemas/requirement_clarifier_output.schema.json v0.1 / v0.2
 
 它负责：
 
-1. 将 `structured_requirement` 转为 `structured_requirement_text`，用于写入会话变量。
-2. 将 `search_questions` 转为 `search_questions_text`，供后续 LLM 理解全部检索问题。
-3. 将 `search_questions` 转为 `search_question_items`，供 Iteration 节点逐项检索。
+1. 将 structured_requirement 转为 structured_requirement_text，用于写入会话变量。
+2. 将 search_questions 转为 search_questions_text，供后续 LLM 理解全部检索问题。
+3. 将 search_questions 转为 search_question_items，供 Iteration 节点逐项检索。
 
 ### 输入
 
@@ -220,6 +248,7 @@ llm_output = 需求梳理 Agent.structured_output
 
 ```python
 import json
+
 
 def main(llm_output: dict) -> dict:
     output = llm_output or {}
@@ -253,10 +282,10 @@ def main(llm_output: dict) -> dict:
     return {
         "structured_requirement_text": json.dumps(
             structured_requirement,
-            ensure_ascii=False
+            ensure_ascii=False,
         ),
         "search_questions_text": "\n".join(search_question_lines),
-        "search_question_items": search_question_items
+        "search_question_items": search_question_items,
     }
 ```
 
@@ -270,14 +299,17 @@ def main(llm_output: dict) -> dict:
 
 ### 变量赋值
 
-| 会话变量               | 赋值来源                                                     |
-| ---------------------- | ------------------------------------------------------------ |
-| requirement_state      | 需求梳理 Agent.structured_requirement                        |
-| requirement_state_text | 格式化需求与检索问题.structured_requirement_text             |
-| missing_fields_state   | 需求梳理 Agent.clarification.missing_fields / missing_fields |
-| last_route_decision    | 需求梳理 Agent.route_decision                                |
+| 会话变量               | 赋值来源                                                      |
+| ---------------------- | ------------------------------------------------------------- |
+| requirement_state      | 需求梳理 Agent.structured_output.structured_requirement       |
+| requirement_state_text | 格式化需求与检索问题.structured_requirement_text              |
+| missing_fields_state   | 需求梳理 Agent.structured_output.clarification.missing_fields |
+| last_route_decision    | 需求梳理 Agent.structured_output.route_decision               |
 
-说明：`requirement_state` 是 Object，用于流程节点；`requirement_state_text` 是 String，用于 LLM Prompt 读取。
+说明：
+
+- requirement_state 是 Object，用于流程节点。
+- requirement_state_text 是 String，用于 LLM Prompt 读取。
 
 ---
 
@@ -294,15 +326,16 @@ route_decision == need_follow_up
 动作：
 
 ```text
-输出待客户确认问题 Answer
+追问缺失信息 Answer
 ```
 
 Answer 内容建议：
 
 ```text
-当前客户需求信息还不完整。请向客户进一步确认，或补充以下信息：
+当前客户需求信息还不完整，暂时无法进入证据检索流程。
 
-{{clarification.questions}}
+请向客户进一步确认，或补充以下客户信息：
+{{需求梳理 Agent.structured_output.clarification.questions}}
 ```
 
 注意：正式产品中不要输出过多内部字段，例如 missing_fields 可以在调试时输出；面向售前人员时建议只输出待确认问题和少量必要说明。
@@ -327,7 +360,7 @@ route_decision == technical_matching
 
 ### 作用
 
-遍历 `search_question_items`，让每个 search_question 单独调用一次 Knowledge Retrieval。
+遍历 search_question_items，让每个 search_question 单独调用一次 Knowledge Retrieval。
 
 这样可以避免把多个问题合并成一个 query 时，被 Top K 挤掉部分需求项。
 
@@ -369,7 +402,7 @@ Iteration 当前 item
 ### 当前知识库
 
 ```text
-AI客服售前方案生成知识库
+AI客服售前方案生成_MVP知识库
 ```
 
 ### 推荐检索配置
@@ -415,7 +448,7 @@ def main(query: str, retrieval_results: list) -> dict:
     if not results:
         blocks.append("### 检索结果\n未召回相关知识库片段。")
         return {
-            "single_retrieval_text": "\n".join(blocks)
+            "single_retrieval_text": "\n".join(blocks),
         }
 
     blocks.append("### 检索结果")
@@ -439,13 +472,12 @@ title: {title}
 score: {score}
 segment_position: {segment_position}
 segment_id: {segment_id}
-content:
-{content}
+content: {content}
 """
         blocks.append(block)
 
     return {
-        "single_retrieval_text": "\n\n".join(blocks)
+        "single_retrieval_text": "\n\n".join(blocks),
     }
 ```
 
@@ -455,7 +487,7 @@ content:
 
 ### 作用
 
-将 Iteration 输出的多个 `single_retrieval_text` 合并为一个 `evidence_context_text`，供证据检索 Agent 读取。
+将 Iteration 输出的多个 single_retrieval_text 合并为一个 evidence_context_text，供证据检索 Agent 读取。
 
 ### 输入
 
@@ -490,7 +522,7 @@ def main(retrieval_texts) -> dict:
 
     return {
         "evidence_context_text": evidence_context_text,
-        "retrieval_group_count": len(cleaned)
+        "retrieval_group_count": len(cleaned),
     }
 ```
 
@@ -500,7 +532,7 @@ def main(retrieval_texts) -> dict:
 
 ### 作用
 
-基于逐项检索后的 `evidence_context_text`，整理每个需求项对应的证据结果。
+基于逐项检索后的 evidence_context_text，整理每个需求项对应的证据结果。
 
 该 Agent 不负责最终判断支持等级，不生成方案，不承诺报价或交期。
 
@@ -510,6 +542,18 @@ def main(retrieval_texts) -> dict:
 - search_questions_text
 - evidence_context_text
 - retrieval_group_count
+
+### 当前 Prompt 版本
+
+```text
+prompts/02_evidence_retrieval_prompt/evidence_retrieval_prompt_v0.1.md
+```
+
+### 当前 Schema 版本
+
+```text
+schemas/evidence_retrieval_output.schema.json
+```
 
 ### 输出
 
@@ -569,64 +613,235 @@ def main(retrieval_texts) -> dict:
 
 ---
 
-## 14. 当前调试输出节点
+## 14. 能力匹配评估 Agent
 
-当前 `调试输出方案生成结果 Answer` 用于开发调试，验证方案生成 Agent 是否能基于能力匹配结果生成面向售前人员的内部初版方案。
+### 作用
 
-它会直接输出：
+基于证据检索 Agent 输出，将每个需求项转化为售前可使用的能力支持等级、交付边界、技术依赖、人工确认项和风险标记。
+
+该 Agent 不生成自然语言方案，只做能力评估。
+
+### 输入
+
+- structured_requirement_text
+- 证据检索 Agent.structured_output
+
+### 当前 Prompt 版本
 
 ```text
-方案生成 Agent.structured_output
+prompts/03_capability_matching_prompt/capability_matching_prompt_v0.1.md
 ```
 
-正式产品中不应直接将 solution_generation_output 原样作为客户正式版本输出。方案生成结果应先经过风险校验 Agent，检查过度承诺、无依据结论、遗漏待确认项和交付边界后，再由最终汇总输出节点整理为售前可审核版本。
-
-后续正式流程应改为：
+### 当前 Schema 版本
 
 ```text
-证据检索 Agent
-        |
-        v
-能力匹配评估 Agent
-        |
-        v
-方案生成 Agent
-        |
-        v
-风险校验 Agent
-        |
-        v
-最终汇总输出
+schemas/capability_matching_output.schema.json
 ```
 
-最终 Answer 应面向售前人员，输出可审核的内部初版方案、能力匹配表、引用依据、风险项和待客户/内部专家确认事项。该输出不能作为客户正式承诺。
+### 输出核心字段
+
+```json
+{
+  "capability_assessments": [
+    {
+      "requirement_item": "",
+      "support_level": "standard_supported | configurable_supported | integration_required | needs_human_confirmation | not_supported_or_no_evidence",
+      "human_confirmation_required": false,
+      "technical_dependencies": [],
+      "delivery_boundaries": [],
+      "human_confirmation_items": [],
+      "risk_flags": [],
+      "plan_expression": "",
+      "plan_eligible": true
+    }
+  ],
+  "assessment_summary": {}
+}
+```
+
+### 支持等级
+
+| 支持等级 | 含义 |
+| --- | --- |
+| `standard_supported` | 有直接证据证明标准支持 |
+| `configurable_supported` | 可通过配置、知识库、规则或流程支持 |
+| `integration_required` | 可支持，但依赖客户系统、API、数据源或第三方接口对接 |
+| `needs_human_confirmation` | 可评估，但需人工确认交付条件、周期、费用、实施范围或商务条款 |
+| `not_supported_or_no_evidence` | 无直接支持证据，或证据表明暂不支持 |
+
+### 关键规则
+
+- 系统/API/数据源对接类能力应优先标记为 integration_required，同时可设置 human_confirmation_required = true。
+- 不能因为系统对接需要人工确认，就把主要支持等级改成 needs_human_confirmation。
+- 私有化部署、报价、交付周期、定制开发范围等事项应标记为 needs_human_confirmation。
+- not_supported_or_no_evidence 不应进入推荐方案主体。
 
 ---
 
-## 15. 知识库
+## 15. 方案生成 Agent
+
+### 作用
+
+基于结构化需求、证据检索结果和能力匹配评估结果，生成售前可审核的初版方案。
+
+该 Agent 输出方案草稿，但不作为最终 Answer 直接展示。方案生成结果必须经过风险校验 Agent。
+
+### 输入
+
+- structured_requirement_text
+- 证据检索 Agent.structured_output
+- 能力匹配评估 Agent.structured_output
+
+### 当前 Prompt 版本
+
+```text
+prompts/04_solution_generation_prompt/solution_generation_prompt_v0.2.md
+```
+
+### 当前 Schema 版本
+
+```text
+schemas/proposal_generation_output.schema.json
+```
+
+### 输出
+
+```json
+{
+  "proposal_json": {},
+  "proposal_text_draft": ""
+}
+```
+
+### 关键规则
+
+- 只能使用能力匹配结果中 plan_eligible = true 的能力生成方案主体。
+- standard_supported 可以表达为“支持该能力”。
+- configurable_supported 必须表达为“可通过配置支持”。
+- integration_required 必须表达为“完成系统/API/数据源对接后支持”。
+- needs_human_confirmation 必须表达为“可评估，需进一步确认”。
+- not_supported_or_no_evidence 不得写入推荐方案主体，只能写入未确认或暂不纳入方案的说明。
+- 不得承诺报价、交期、上线时间、私有化部署一定可交付。
+- 需要对 human_confirmation_items、risk_notes、delivery_boundaries、deployment_notes、excluded_or_unconfirmed_items 进行语义去重。
+
+---
+
+## 16. 风险校验 Agent
+
+### 作用
+
+风险校验 Agent 位于方案生成 Agent 之后、最终 Answer 之前。
+
+它负责检查方案初稿是否存在：
+
+- 过度承诺
+- 无证据能力写入方案主体
+- 支持等级表达错误
+- 系统/API 对接依赖遗漏
+- 私有化部署边界遗漏
+- 报价、交期、上线等人工确认项遗漏
+- 风险提示遗漏
+
+### 输入
+
+- structured_requirement_text
+- 证据检索 Agent.structured_output
+- 能力匹配评估 Agent.structured_output
+- 方案生成 Agent.proposal_json
+- 方案生成 Agent.proposal_text_draft
+
+### 当前 Prompt 版本
+
+```text
+prompts/05_risk_review_prompt/risk_review_prompt_v0.1.md
+```
+
+### 当前 Schema 版本
+
+```text
+schemas/risk_review_output.schema.json
+```
+
+### 输出
+
+```json
+{
+  "risk_check_result": {
+    "passed": true,
+    "risk_level": "low | medium | high | blocked",
+    "must_block_output": false,
+    "issues": [],
+    "summary": ""
+  },
+  "final_safe_response": ""
+}
+```
+
+### 关键规则
+
+- integration_required 必须保留系统/API 对接前提。
+- needs_human_confirmation 必须保留人工确认边界。
+- not_supported_or_no_evidence 不得作为确定能力进入推荐方案主体。
+- 不得输出确定报价、确定交期、保证上线、私有化部署可直接交付等表达。
+- 最终输出必须是可直接展示给售前人员的自然语言方案。
+- 最终输出不应暴露中间 JSON。
+
+---
+
+## 17. 最终安全方案输出 Answer
+
+### 作用
+
+正式输出给售前人员的最终 Answer。
+
+### 输出模板
+
+```text
+{{风险校验 Agent.final_safe_response}}
+```
+
+正式版本只输出 final_safe_response。
+
+调试阶段可临时输出：
+
+```text
+## 风险校验结果
+
+{{风险校验 Agent.risk_check_result}}
+
+---
+
+## 最终安全方案
+
+{{风险校验 Agent.final_safe_response}}
+```
+
+调试完成后必须改回只输出 final_safe_response。
+
+---
+
+## 18. 知识库
 
 MVP 阶段使用一个 Dify 知识库：
 
 ```text
-AI客服售前方案生成知识库
+AI客服售前方案生成_MVP知识库
 ```
 
 导入来源：
 
 ```text
-knowledge_docs/
+knowledge_docs/knowledge_docs_v0.1/
 ```
 
 当前建议文档结构：
 
 ```text
 knowledge_docs_v0.1/
-  01_产品能力说明.md
-  02_技术方案与系统对接说明.md
-  03_交付边界与人工确认规则.md
-  04_FAQ_售前常见问题.md
-  05_历史案例.md
-  06_版本与冲突测试文档.md
+├── 01_产品能力说明.md
+├── 02_技术方案与系统对接说明.md
+├── 03_交付边界与人工确认规则.md
+└── 04_FAQ_售前常见问题.md
 ```
 
 当前元数据过滤暂不启用。
@@ -644,72 +859,115 @@ knowledge_docs_v0.1/
 
 ---
 
-## 16. 当前已验证测试
+## 19. 当前已验证测试
 
-现有 RC / ER / CA / SG 系列测试中，早期用例多使用“客户口吻输入”。这些用例不删除，保留为历史测试，用于验证字段抽取、多轮追问、search_questions 生成、逐项检索、证据整理、能力匹配和方案生成等底层能力。
+当前项目已完成分模块测试与端到端测试。
 
-产品定位修正为“售前内部 Copilot”后，需要新增售前内部输入口径测试，用于验证系统能正确理解销售/售前人员转述的客户需求，并输出面向售前人员的待客户确认问题。
+### 需求梳理 Agent
 
-### RC-001 ~ RC-006
+覆盖：
 
-历史测试：用于验证需求梳理 Agent 的单轮字段提取、追问、口语标准化和字段边界。
+- 信息缺失追问
+- 完整需求路由
+- 结构化需求抽取
+- 字段语义边界
+- 多轮状态合并
+- 售前内部输入口径
 
-### RC-007 多轮追问补齐需求
+### 证据检索 Agent
 
-历史测试：使用客户口吻输入，主要验证多轮状态合并和字段边界。
+覆盖：
 
-验证点：
+- 逐项检索
+- 证据归因
+- 引用来源整理
+- 限制条件提取
+- 证据缺口识别
 
-- 第一轮进入 need_follow_up。
-- 会话变量保存 requirement_state。
-- 第二轮读取历史状态并合并本轮补充。
-- route_decision 从 need_follow_up 转为 technical_matching。
-- 修复 scenario 与 functional_requirements 语义混淆问题。
+### 能力匹配评估 Agent
 
-### ER-001 多轮补齐后的零售 AI 客服证据检索
+覆盖：
 
-验证点：
+- 支持等级判断
+- 系统/API 对接能力识别
+- 私有化部署人工确认
+- 风险标记
+- 方案可进入性判断
 
-- Iteration 对每个 search_question 单独检索。
-- 商品咨询、订单查询、私有化部署、订单系统均有独立召回机会。
-- 证据检索 Agent 能识别订单系统 API 依赖。
-- 证据检索 Agent 能识别私有化部署需人工确认。
-- 证据检索 Agent 能输出 strong / weak / no evidence / need human confirmation 分类。
-- 当前需继续优化证据归因，避免弱相关证据被错误归入当前 requirement_item。
+### 方案生成 Agent
 
-### RC-008 售前内部输入 - 多轮需求补齐
+覆盖：
 
-待新增测试，用于验证定位修正后的真实输入口径。
+- 生成 proposal_json
+- 生成 proposal_text_draft
+- 保留能力边界
+- 保留系统依赖
+- 保留人工确认项
+- 语义去重
 
-第一轮输入示例：
+### 风险校验 Agent
 
-```text
-客户反馈他们想做 AI 客服，目标是降低客服压力。请帮我先梳理需求。
-```
+覆盖：
 
-第二轮输入示例：
+- 过度承诺检查
+- 系统依赖遗漏检查
+- 私有化部署边界检查
+- 报价、交期、上线等人工确认项检查
+- 最终安全方案输出
 
-```text
-补充信息：客户主要希望给消费者和客服坐席使用，需要支持商品咨询和订单查询，希望私有化部署，并需要对接客户的订单系统。
-```
+### 端到端 E2E 测试
 
-预期验证点：
+已通过以下 5 条端到端测试：
 
-- 能提取 `business_goal = 降低客服压力` 和 `scenario = AI客服`。
-- 不将“请帮我先梳理需求”写入客户需求字段。
-- 信息不足时，clarification.questions 面向售前人员，使用“请向客户确认 / 请补充客户信息”口吻。
-- 第二轮补齐后，route_decision = technical_matching。
-- search_questions 非空，并覆盖商品咨询、订单状态查询、私有化部署和订单系统对接。
+| Case ID | 结果 |
+| --- | --- |
+| E2E-001 | Pass |
+| E2E-002 | Pass |
+| E2E-003 | Pass |
+| E2E-004 | Pass |
+| E2E-005 | Pass |
+
+覆盖场景：
+
+1. 售前内部输入主链路。
+2. 信息不足时必须阻断，不得假设需求。
+3. 明确不需要系统对接时不得强行生成 API 依赖。
+4. 外部数据查询必须保留 API 对接边界。
+5. 不支持能力与报价交期高风险场景。
 
 ---
 
-## 17. 后续待办
+## 20. 当前状态
 
-1. 优化证据检索 Agent Prompt，强化证据归因边界。
-2. 将调试 Answer 替换为能力匹配评估 Agent。
-3. 增加能力匹配评估 Agent 的 Schema 和测试集。
-4. 增加方案生成 Agent。
-5. 增加风险校验 Agent。
-6. 增加最终汇总输出节点。
-7. 补充更多知识库文档，包括订单系统 API 对接细节、私有化部署环境要求、客服系统对接边界等。
-8. 后续考虑开启 Rerank、metadata 过滤和多知识库路由。
+当前 Chatflow 已完成 MVP 阶段核心能力验证。
+
+已验证完整闭环：
+
+```text
+售前人员转述客户需求
+  -> 系统判断信息完整性
+  -> 信息不足时生成售前口吻追问
+  -> 信息完整后进入证据检索
+  -> 基于知识库整理证据
+  -> 完成能力匹配评估
+  -> 生成售前初版方案
+  -> 进行风险校验
+  -> 输出最终安全方案
+```
+
+当前版本可以用于作品集 / 面试展示，展示一个从需求梳理到安全方案输出的多 Agent 售前 Copilot 工作流。
+
+---
+
+## 21. 后续优化方向
+
+当前 MVP 主链路已跑通，后续可继续优化：
+
+1. 扩展知识库覆盖范围，例如公有云部署、SLA、报价流程、行业案例等。
+2. 增加更多行业场景，例如制造、金融、政企、教育等。
+3. 增加复杂会议纪要输入测试。
+4. 增加批量需求项、多客户角色、多系统对接场景。
+5. 引入自动化 Eval 脚本，对结构化输出进行批量断言。
+6. 开启 Rerank、metadata 过滤和多知识库路由。
+7. 优化最终方案的销售表达质量和可复用性。
+8. 增加 Dify DSL 导出文件和部署复现说明。
