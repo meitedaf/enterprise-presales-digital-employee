@@ -1,0 +1,1679 @@
+app:
+  description: '模拟企业售前数字员工的核心工作流：将客户模糊需求结构化，基于企业知识库检索证据，评估产品能力匹配关系，生成可供售前人员审核的初版方案，并标记风险和人工确认项。
+
+
+    该项目的定位不是直接替代售前人员做最终承诺，而是提升售前前期响应效率，降低资料查找、方案起草和能力边界遗漏的成本。'
+  icon: 🤖
+  icon_background: '#FFEAD5'
+  icon_type: emoji
+  mode: advanced-chat
+  name: 企业售前数字员工
+  use_icon_as_answer_icon: false
+dependencies:
+- current_identifier: null
+  type: marketplace
+  value:
+    marketplace_plugin_unique_identifier: langgenius/tongyi:0.1.48@966d88dc40611f067311c1c9839139ebc4b55bff471bc5e736dc3e828bc67b46
+    version: null
+kind: app
+version: 0.6.0
+workflow:
+  conversation_variables:
+  - description: 保存多轮对话中已收集结构化需求的文本版本，供 LLM1 在下一轮读取并合并用户补充信息。
+    id: 801ca11b-266c-4997-9eb3-09c260625bba
+    name: requirement_state_text
+    selector:
+    - conversation
+    - requirement_state_text
+    value: "{\n\n  \"business_goal\": \"\",\n\n  \"scenario\": \"\",\n\n  \"target_users\"\
+      : [],\n\n  \"functional_requirements\": [],\n\n  \"deployment_requirement\"\
+      : \"\",\n\n  \"integration_requirements\": []\n\n}"
+    value_type: string
+  - description: 保存上一轮需求梳理 Agent 的路由结果，用于判断当前会话处于追问中还是可进入技术匹配。
+    id: 5e2e9d03-95ac-4bc9-b594-ec0d21bba03a
+    name: last_route_decision
+    selector:
+    - conversation
+    - last_route_decision
+    value: '""'
+    value_type: string
+  - description: 保存当前仍缺失的 required_fields，用于下一轮继续追问或判断是否补齐。
+    id: bffb5e0b-57b8-4962-8022-0dbc4f5f805c
+    name: missing_fields_state
+    selector:
+    - conversation
+    - missing_fields_state
+    value:
+    - '[]'
+    value_type: array[string]
+  - description: 保存多轮对话中已收集到的结构化需求，用于下一轮需求梳理 Agent 合并用户补充信息。
+    id: c25794f2-6198-4c4d-8ce1-fdfcc7d40811
+    name: requirement_state
+    selector:
+    - conversation
+    - requirement_state
+    value:
+      business_goal: ''
+      deployment_requirement: ''
+      functional_requirements: []
+      integration_requirements: []
+      scenario: ''
+      target_users: []
+    value_type: object
+  environment_variables: []
+  features:
+    file_upload:
+      allowed_file_extensions:
+      - .JPG
+      - .JPEG
+      - .PNG
+      - .GIF
+      - .WEBP
+      - .SVG
+      allowed_file_types:
+      - image
+      allowed_file_upload_methods:
+      - local_file
+      - remote_url
+      enabled: false
+      fileUploadConfig:
+        attachment_image_file_size_limit: 2
+        audio_file_size_limit: 50
+        batch_count_limit: 5
+        file_size_limit: 15
+        file_upload_limit: 50
+        image_file_batch_limit: 10
+        image_file_size_limit: 10
+        single_chunk_attachment_limit: 10
+        video_file_size_limit: 100
+        workflow_file_upload_limit: 10
+      image:
+        enabled: false
+        number_limits: 3
+        transfer_methods:
+        - local_file
+        - remote_url
+      number_limits: 3
+    opening_statement: ''
+    retriever_resource:
+      enabled: true
+    sensitive_word_avoidance:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    suggested_questions: []
+    suggested_questions_after_answer:
+      enabled: false
+    text_to_speech:
+      enabled: false
+      language: ''
+      voice: ''
+  graph:
+    edges:
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: start
+        targetType: llm
+      id: 1780659789689-source-1780811744060-target
+      selected: false
+      source: '1780659789689'
+      sourceHandle: source
+      target: '1780811744060'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: llm
+        targetType: code
+      id: 1780811744060-source-1780825052867-target
+      source: '1780811744060'
+      sourceHandle: source
+      target: '1780825052867'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: code
+        targetType: assigner
+      id: 1780825052867-source-1780824042450-target
+      source: '1780825052867'
+      sourceHandle: source
+      target: '1780824042450'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: assigner
+        targetType: if-else
+      id: 1780824042450-source-1780825851364-target
+      source: '1780824042450'
+      sourceHandle: source
+      target: '1780825851364'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: if-else
+        targetType: answer
+      id: 1780825851364-true-1780825963543-target
+      source: '1780825851364'
+      sourceHandle: 'true'
+      target: '1780825963543'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: code
+        targetType: iteration
+      id: 1780906325781-source-1780906677591-target
+      source: '1780906325781'
+      sourceHandle: source
+      target: '1780906677591'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: true
+        isInLoop: false
+        iteration_id: '1780906677591'
+        sourceType: iteration-start
+        targetType: knowledge-retrieval
+      id: 1780906677591start-source-1780907066512-target
+      source: 1780906677591start
+      sourceHandle: source
+      target: '1780907066512'
+      targetHandle: target
+      type: custom
+      zIndex: 1002
+    - data:
+        isInIteration: true
+        isInLoop: false
+        iteration_id: '1780906677591'
+        sourceType: knowledge-retrieval
+        targetType: code
+      id: 1780907066512-source-1780907145894-target
+      source: '1780907066512'
+      sourceHandle: source
+      target: '1780907145894'
+      targetHandle: target
+      type: custom
+      zIndex: 1002
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: iteration
+        targetType: code
+      id: 1780906677591-source-1780907434644-target
+      source: '1780906677591'
+      sourceHandle: source
+      target: '1780907434644'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: code
+        targetType: llm
+      id: 1780907434644-source-1780900876393-target
+      source: '1780907434644'
+      sourceHandle: source
+      target: '1780900876393'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: if-else
+        targetType: code
+      id: 1780825851364-cf0963a0-51bc-4478-9639-14f50595d440-1780906325781-target
+      source: '1780825851364'
+      sourceHandle: cf0963a0-51bc-4478-9639-14f50595d440
+      target: '1780906325781'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: llm
+        targetType: llm
+      id: 1780900876393-source-1780915649779-target
+      source: '1780900876393'
+      sourceHandle: source
+      target: '1780915649779'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: llm
+        targetType: llm
+      id: 1780915649779-source-1780982987374-target
+      source: '1780915649779'
+      sourceHandle: source
+      target: '1780982987374'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: llm
+        targetType: llm
+      id: 1780982987374-source-1780992432293-target
+      source: '1780982987374'
+      sourceHandle: source
+      target: '1780992432293'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: llm
+        targetType: answer
+      id: 1780992432293-source-1780983711598-target
+      source: '1780992432293'
+      sourceHandle: source
+      target: '1780983711598'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    nodes:
+    - data:
+        selected: false
+        title: 用户输入
+        type: start
+        variables: []
+      height: 73
+      id: '1780659789689'
+      position:
+        x: 0
+        y: 21.44999999999998
+      positionAbsolute:
+        x: 0
+        y: 21.44999999999998
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        desc: 提取结构化需求，判断信息是否完整，生成追问或检索问题
+        model:
+          completion_params:
+            temperature: 0.1
+          mode: chat
+          name: qwen3.6-flash-2026-04-16
+          provider: langgenius/tongyi/tongyi
+        prompt_template:
+        - id: 0cc411ab-70b4-4fe0-85f1-511cc2283d9e
+          role: system
+          text: "你是“需求梳理 Agent”。\n\n\n## 产品使用对象\n\n\n本系统的直接使用者是销售、售前顾问或解决方案团队成员，不是终端客户本人。\n\
+            \n\n用户输入通常是：\n1. 售前人员转述的客户需求。\n2. 客户沟通记录。\n3. 会议纪要摘要。\n4. 已上传资料中的需求摘要。\n\
+            5. 售前人员在多轮对话中补充的客户信息。\n\n\n你需要从这些输入中提取“客户需求”，而不是把售前人员本人当成客户。\n\n\n当信息不足时，你应输出“售前人员需要向客户进一步确认的问题”，而不是直接以客户服务口吻追问终端客户。\n\
+            \n\n## 目标\n\n\n将售前人员输入的客户需求描述转化为结构化需求，并判断是否可以进入后续证据检索流程。\n\n\n你只负责：\n\
+            1. 识别售前输入中的客户需求。\n2. 提取结构化需求。\n3. 判断 required_fields 是否完整。\n4. 信息不足时生成“售前需向客户确认的问题”。\n\
+            5. 信息充分时生成 search_questions。\n6. 输出 route_decision。\n\n\n你不能：\n1. 检索知识库。\n\
+            2. 判断产品是否支持。\n3. 生成售前方案。\n4. 自行假设客户未明确说明的信息。\n5. 把行业经验、常见场景或客户类型当作已确认事实。\n\
+            6. 把售前人员的内部操作意图写入客户需求字段。\n\n\n## 输入变量\n\n\n已收集结构化需求：\n{{#conversation.requirement_state_text#}}\n\
+            \n\n\n当前仍缺失字段：\n{{#conversation.missing_fields_state#}}\n\n\n\n上一轮路由结果：\n\
+            {{#conversation.last_route_decision#}}\n\n\n\n本轮用户输入：\n{{#sys.query#}}\n\
+            \n\n## 售前口吻输入理解规则\n\n\n如果本轮输入中出现以下表达，应理解为售前人员在转述客户需求：\n- 客户反馈……\n- 客户希望……\n\
+            - 客户主要想……\n- 客户提到……\n- 客户要求……\n- 补充信息：客户……\n- 会议纪要里提到……\n- 销售转述……\n- 帮我先梳理一下这个客户需求\n\
+            - 帮我生成初版方案前先整理需求\n\n\n你必须提取其中的客户需求内容。\n\n\n示例：\n\n\n输入：\n客户反馈他们想做 AI 客服，目标是降低客服压力。请帮我先梳理需求。\n\
+            \n\n应提取：\n- business_goal = 降低客服压力\n- scenario = AI客服\n\n\n不得将以下内容写入 structured_requirement：\n\
+            - 请帮我先梳理需求\n- 帮我生成方案\n- 准备给客户沟通\n- 帮我看看能不能做\n- 这个客户比较急\n\n\n这些是售前人员的操作意图或内部背景，不是客户需求字段。\n\
+            \n\n售前人员的内部操作意图可以作为任务背景理解，但不得写入 structured_requirement，也不得替代 required_fields。内部操作意图包括“请帮我梳理需求”“帮我生成方案”“帮我看看能不能做”“准备给客户沟通”等。\n\
+            \n\n## 多轮信息合并规则\n\n\n1. 你需要同时读取“已收集结构化需求”和“本轮售前输入”。\n2. 如果已收集结构化需求中某个字段已有明确值，而本轮没有修改，则保留原值。\n\
+            3. 如果本轮输入补充了缺失字段，则将补充内容合并到 structured_requirement。\n4. 如果本轮输入明确修改了之前字段，则以本轮输入为准。\n\
+            5. 不能因为历史字段为空就自行补全。\n6. 不能把上一轮追问问题中的示例当作客户已确认信息。\n7. 每轮都必须重新检查 required_fields\
+            \ 是否全部明确。\n8. 如果 required_fields 仍有缺失，则 route_decision = need_follow_up。\n\
+            9. 如果 required_fields 全部明确，则 route_decision = technical_matching，并生成 search_questions。\n\
+            \n\n## required_fields\n\n\n1. business_goal：业务目标\n2. scenario：应用场景\n\
+            3. target_users：目标用户\n4. functional_requirements：功能需求\n5. deployment_requirement：部署要求\n\
+            6. integration_requirements：系统对接需求\n\n\n## 字段提取规则\n\n\n只能提取输入中明确出现的客户需求信息。不要根据行业、常识或经验补全字段。\n\
+            \n\n### business_goal\n\n\n表示客户希望达成的业务结果。\n\n\n合法示例：\n- 降低人工客服压力\n- 提升客服响应效率\n\
+            - 减少重复咨询\n- 提升售后处理效率\n\n\n如果只有“做一个 AI 系统”“帮助业务提效”等过于泛化表达，且无法判断具体业务目标，应视为不明确。\n\
+            \n\n### scenario\n\n\n表示 AI 系统所在的业务场景、服务环节或客户旅程阶段。\n\n\n合法示例：\n- AI客服\n\
+            - 在线客服\n- 售前咨询\n- 售后服务\n- 门店导购\n- 内部客服支持\n- 工单处理\n\n\n不能把具体功能写成 scenario。\n\
+            \n\n以下属于 functional_requirements，不属于 scenario：\n- 商品咨询\n- 订单查询\n- 订单状态查询\n\
+            - 退换货政策问答\n- 投诉转人工\n\n\n如果输入表达“想做 AI 客服”“客服机器人”“智能客服”，可以将 scenario 标准化为“AI客服”。\n\
+            \n\n### target_users\n\n\n表示 AI 系统的实际使用对象。\n\n\n合法示例：\n- 消费者\n- 客服坐席\n\
+            - 门店员工\n- 售后人员\n- 内部员工\n- 客户经理\n- 终端用户\n\n\n客户公司、客户行业、客户类型不能作为 target_users。\n\
+            \n\n以下不能作为 target_users：\n- 零售企业\n- 制造业公司\n- 金融机构\n- 企业客户\n- 某集团\n- 某行业客户\n\
+            \n\n如果输入没有明确说明实际使用对象，target_users 必须为空数组，并将 target_users 加入 missing_fields。\n\
+            \n\n### functional_requirements\n\n\n表示 AI 系统需要完成的具体任务或功能能力。\n\n\n合法示例：\n\
+            - 商品咨询\n- 订单状态查询\n- 退换货政策问答\n- 投诉转人工\n- 知识库问答\n- 工单创建\n- 物流进度查询\n\n\n\
+            不要把业务目标、部署方式、系统对接对象、客户行业或产品形态写入 functional_requirements。\n\n\n以下不能作为 functional_requirements：\n\
+            - 降低客服压力\n- 减少重复咨询\n- 私有化部署\n- 对接订单系统\n- AI客服\n- 智能客服\n- 客服机器人\n\n\n其中：\n\
+            - “降低客服压力”“减少重复咨询”属于 business_goal。\n- “私有化部署”属于 deployment_requirement。\n\
+            - “对接订单系统”属于 integration_requirements。\n- “AI客服”“智能客服”“客服机器人”属于 scenario\
+            \ 或产品形态描述，不属于 functional_requirements。\n\n\n### deployment_requirement\n\
+            \n\n表示系统部署形态或部署约束。\n\n\n合法示例：\n- 公有云\n- 私有化部署\n- 混合云\n- 本地化部署\n\n\n如果输入没有明确说明部署方式，deployment_requirement\
+            \ 必须为空字符串，并加入 missing_fields。\n\n\n不要把功能需求、系统对接对象或业务场景写入 deployment_requirement。\n\
+            \n\n### integration_requirements\n\n\n表示需要对接的外部系统、数据源、平台或接口。\n\n\n合法示例：\n\
+            - 订单系统\n- 客服系统\n- CRM 系统\n- 工单系统\n- 用户系统\n- 物流系统\n\n\n注意：\n- “订单查询”是 functional_requirement。\n\
+            - “对接订单系统”是 integration_requirement。\n- “客服系统”只有在输入明确表示需要对接、连接、集成、打通时，才属于\
+            \ integration_requirement。\n- 如果客户明确表示“不需要系统对接”“暂不对接任何系统”“不需要集成外部系统”，则\
+            \ integration_requirements 必须填写为 [\"no_need\"]，且不算缺失。\n- 如果没有提到是否需要系统对接，应视为不明确，并将\
+            \ integration_requirements 加入 missing_fields。\n\n\n## 口语标准化规则\n\n\n对输入中的口语表达进行标准化，但不要改变事实含义。\n\
+            \n\n示例：\n- “问商品” -> 商品咨询\n- “订单查询” / “查订单” / “查订单进度” -> 订单状态查询\n- “问退货规则”\
+            \ -> 退换货政策问答\n- “投诉接人工” / “投诉转人工” -> 投诉转人工\n- “接人工” / “转人工” -> 转人工\n-\
+            \ “连订单系统” -> 订单系统\n- “连客服系统” -> 客服系统\n- “部署到自己服务器” -> 私有化部署\n- “内部部署”\
+            \ -> 私有化部署\n- “客服机器人” -> AI客服\n- “智能客服” -> AI客服\n\n\n## 路由规则\n\n\n###\
+            \ need_follow_up\n\n\n如果任一 required_field 缺失、为空或不明确：\n\n\n1. route_decision\
+            \ 必须为 need_follow_up。\n2. search_questions 必须为空数组。\n3. clarification.missing_fields\
+            \ 必须列出所有缺失字段。\n4. clarification.questions 必须生成面向售前人员的客户确认问题。\n5. 不得进入\
+            \ technical_matching。\n\n\nclarification.questions 的口吻必须面向售前人员，而不是直接面向终端客户。\n\
+            \n\n推荐表达：\n- 该需求对应的 AI 系统主要服务哪些使用对象？\n- 客户希望该 AI 系统具体支持哪些业务功能？\n- 客户期望的部署方式是什么？\n\
+            - 是否需要对接现有系统？如果需要，请确认系统名称。\n\n\n避免表达：\n- 请问你们的主要使用对象是谁？\n- 你们希望系统支持哪些功能？\n\
+            - 你们期望如何部署？\n\n\n### technical_matching\n\n\n只有当所有 required_fields 都明确时，才能输出\
+            \ technical_matching。\n\n\n此时必须满足：\n\n\n1. route_decision = technical_matching。\n\
+            2. clarification.missing_fields = []。\n3. clarification.questions = []。\n\
+            4. search_questions 必须为非空数组。\n5. 每个 functional_requirement 都必须有对应 search_question。\n\
+            6. deployment_requirement 必须有对应 search_question。\n7. 每个 integration_requirement\
+            \ 都必须有对应 search_question。\n8. 如果 integration_requirements = [\"no_need\"\
+            ]，不需要为 no_need 生成系统对接类 search_question。\n9. 如果无法生成 search_questions，不得输出\
+            \ technical_matching，必须改为 need_follow_up。\n\n\n## search_questions 生成规则\n\
+            \n\n仅在 route_decision = technical_matching 时生成 search_questions。\n\n\n\
+            规则：\n\n\n1. 每个 search_question 只验证一个需求点。\n2. 不要把多个需求合并成一个宽泛问题。\n3. query\
+            \ 使用通用、清晰、适合企业知识库检索的业务 / 产品能力表达。\n4. 不要编造产品名称、内部模块名、文档标题或知识库中未出现的专有术语。\n\
+            5. 不要预设产品支持，只提出待验证问题。\n6. 不要为缺失字段生成 search_questions。\n7. search_questions\
+            \ 应用于后续知识库检索，因此应使用可能出现在产品文档中的通用专业表达，但不能假设具体内部模块名称。\n8. 如果用户使用口语表达，应先标准化为业务\
+            \ / 产品能力表达，再生成 query。\n\n\n推荐 query 形式：\n\n\n- “AI 客服是否支持{能力}，支持条件和限制是什么？”\n\
+            - “AI 客服的{能力}是否需要配置、系统对接或定制开发？”\n- “AI 客服是否支持{部署方式}，交付条件和人工确认项是什么？”\n\
+            - “AI 客服对接{系统}需要哪些技术条件和客户侧依赖？”\n\n\n示例：\n\n\n- 商品咨询 -> “AI 客服是否支持基于商品知识库的商品咨询能力，支持条件是什么？”\n\
+            - 订单状态查询 -> “AI 客服是否支持订单状态查询能力，是否需要对接客户订单系统？”\n- 退换货政策问答 -> “AI 客服是否支持基于政策知识库回答退换货政策问题？”\n\
+            - 转人工 -> “AI 客服是否支持转人工能力，触发条件和系统对接要求是什么？”\n- 私有化部署 -> “AI 客服是否支持私有化部署，交付条件、限制和人工确认项是什么？”\n\
+            - 订单系统 -> “AI 客服对接订单系统需要哪些技术条件和客户侧依赖？”\n\n\n## 输出前自检\n\n\n输出前必须检查以下不变量：\n\
+            \n\n1. structured_requirement 只能包含客户需求，不得包含售前人员的内部操作意图。\n2. 如果输入中有“客户反馈\
+            \ / 客户希望 / 补充信息：客户”等表达，必须按售前转述客户需求理解。\n3. 如果 route_decision = need_follow_up，则\
+            \ search_questions 必须为空数组。\n4. 如果 route_decision = need_follow_up，则 missing_fields\
+            \ 和 questions 必须非空。\n5. 如果 route_decision = need_follow_up，则 clarification.questions\
+            \ 必须面向售前人员，使用“请向客户确认 / 请补充客户信息”等口吻。\n6. 如果 route_decision = technical_matching，则\
+            \ missing_fields 和 questions 必须为空数组。\n7. 如果 route_decision = technical_matching，则\
+            \ search_questions 必须非空。\n8. 如果 route_decision = technical_matching，则每个功能需求、部署要求、系统对接需求都必须有对应\
+            \ search_question。\n9. 如果 integration_requirements = [\"no_need\"]，不得为\
+            \ no_need 生成系统对接类 search_question。\n10. target_users 只能来自输入中明确说明，不能来自客户行业或客户公司。\n\
+            11. scenario 不能是具体功能列表；如果 scenario 被填为“商品咨询”“订单查询”“商品咨询和订单查询”等具体功能，必须重新归类。\n\
+            12. functional_requirements 不能包含“AI客服”“智能客服”“客服机器人”等产品形态描述。\n13. deployment_requirement\
+            \ 不能包含系统名称或功能需求。\n14. integration_requirements 不能包含具体功能项，例如“订单查询”；只有“订单系统”或“对接订单系统”才属于\
+            \ integration_requirements。\n15. 如果任一不变量不满足，必须先修正 JSON，再输出最终结果。\n16. 如果\
+            \ integration_requirements = [\"no_need\"]，不得将 \"no_need\" 写入 search_questions.requirement_item。\n\
+            17. route_reason 应以“当前客户需求信息”为主语，避免使用“用户未提供”“你没有说明”等容易混淆售前人员和客户的表述。\n\n\
+            \n## 输出要求\n\n\n1. 只输出严格 JSON。\n2. 不要输出 Markdown。\n3. 不要输出解释文字。\n4. 不要在\
+            \ JSON 外添加任何内容。\n\n\n## 输出 JSON 格式\n\n\n{\n  \"structured_requirement\"\
+            : {\n    \"business_goal\": \"\",\n    \"scenario\": \"\",\n    \"target_users\"\
+            : [],\n    \"functional_requirements\": [],\n    \"deployment_requirement\"\
+            : \"\",\n    \"integration_requirements\": []\n  },\n  \"search_questions\"\
+            : [\n    {\n      \"requirement_item\": \"\",\n      \"query\": \"\"\n\
+            \    }\n  ],\n  \"clarification\": {\n    \"missing_fields\": [],\n  \
+            \  \"questions\": []\n  },\n  \"route_decision\": \"need_follow_up | technical_matching\"\
+            ,\n  \"route_reason\": \"\"\n}"
+        selected: false
+        structured_output:
+          schema:
+            properties:
+              clarification:
+                properties:
+                  missing_fields:
+                    items:
+                      type: string
+                    type: array
+                  questions:
+                    items:
+                      type: string
+                    type: array
+                required:
+                - missing_fields
+                - questions
+                type: object
+              route_decision:
+                enum:
+                - need_follow_up
+                - technical_matching
+                type: string
+              route_reason:
+                type: string
+              search_questions:
+                items:
+                  properties:
+                    query:
+                      type: string
+                    requirement_item:
+                      type: string
+                  required:
+                  - requirement_item
+                  - query
+                  type: object
+                type: array
+              structured_requirement:
+                properties:
+                  business_goal:
+                    type: string
+                  deployment_requirement:
+                    type: string
+                  functional_requirements:
+                    items:
+                      type: string
+                    type: array
+                  integration_requirements:
+                    items:
+                      type: string
+                    type: array
+                  scenario:
+                    type: string
+                  target_users:
+                    items:
+                      type: string
+                    type: array
+                required:
+                - business_goal
+                - scenario
+                - target_users
+                - functional_requirements
+                - deployment_requirement
+                - integration_requirements
+                type: object
+            required:
+            - structured_requirement
+            - search_questions
+            - clarification
+            - route_decision
+            - route_reason
+            type: object
+        structured_output_enabled: true
+        title: 需求梳理Agent
+        type: llm
+        vision:
+          enabled: false
+      height: 132
+      id: '1780811744060'
+      position:
+        x: 342
+        y: 12.11666666666666
+      positionAbsolute:
+        x: 342
+        y: 12.11666666666666
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        desc: 保存多轮状态
+        items:
+        - input_type: variable
+          operation: over-write
+          value:
+          - '1780811744060'
+          - structured_output
+          - structured_requirement
+          variable_selector:
+          - conversation
+          - requirement_state
+        - input_type: variable
+          operation: over-write
+          value:
+          - '1780811744060'
+          - structured_output
+          - clarification
+          - missing_fields
+          variable_selector:
+          - conversation
+          - missing_fields_state
+        - input_type: variable
+          operation: over-write
+          value:
+          - '1780811744060'
+          - structured_output
+          - route_decision
+          variable_selector:
+          - conversation
+          - last_route_decision
+        - input_type: variable
+          operation: over-write
+          value:
+          - '1780825052867'
+          - structured_requirement_text
+          variable_selector:
+          - conversation
+          - requirement_state_text
+        selected: false
+        title: 会话变量赋值
+        type: assigner
+        version: '2'
+      height: 190
+      id: '1780824042450'
+      position:
+        x: 1026
+        y: 7.7833333333333385
+      positionAbsolute:
+        x: 1026
+        y: 7.7833333333333385
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        code: "import json\n\ndef main(llm_output: dict) -> dict:\n    output = llm_output\
+          \ or {}\n\n    structured_requirement = output.get(\"structured_requirement\"\
+          , {})\n    search_questions = output.get(\"search_questions\", [])\n\n \
+          \   search_question_lines = []\n\n    if isinstance(search_questions, list):\n\
+          \        for item in search_questions:\n            if not isinstance(item,\
+          \ dict):\n                continue\n\n            requirement_item = item.get(\"\
+          requirement_item\", \"\")\n            query = item.get(\"query\", \"\"\
+          )\n\n            if requirement_item or query:\n                search_question_lines.append(f\"\
+          {requirement_item}：{query}\")\n\n    return {\n        \"structured_requirement_text\"\
+          : json.dumps(\n            structured_requirement,\n            ensure_ascii=False\n\
+          \        ),\n        \"search_questions_text\": \"\\n\".join(search_question_lines)\n\
+          \    }"
+        code_language: python3
+        desc: Code，把 LLM1 输出转成文本
+        outputs:
+          search_questions_text:
+            children: null
+            type: string
+          structured_requirement_text:
+            children: null
+            type: string
+        selected: false
+        title: 格式化requirement_output
+        type: code
+        variables:
+        - value_selector:
+          - '1780811744060'
+          - structured_output
+          value_type: object
+          variable: llm_output
+      height: 80
+      id: '1780825052867'
+      position:
+        x: 684
+        y: 49.45
+      positionAbsolute:
+        x: 684
+        y: 49.45
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        cases:
+        - case_id: 'true'
+          conditions:
+          - comparison_operator: is
+            id: 807fdcac-1494-4e62-ba65-b134d0401e5d
+            value: need_follow_up
+            varType: string
+            variable_selector:
+            - '1780811744060'
+            - structured_output
+            - route_decision
+          id: 'true'
+          logical_operator: and
+        - case_id: cf0963a0-51bc-4478-9639-14f50595d440
+          conditions:
+          - comparison_operator: is
+            id: 7070cde2-7698-40f9-afb7-fbb782aeea37
+            value: technical_matching
+            varType: string
+            variable_selector:
+            - '1780811744060'
+            - structured_output
+            - route_decision
+          id: cf0963a0-51bc-4478-9639-14f50595d440
+          logical_operator: and
+        desc: 判断 need_follow_up / technical_matching
+        selected: false
+        title: 判断需求是否完整
+        type: if-else
+      height: 264
+      id: '1780825851364'
+      position:
+        x: 1368
+        y: 2.450000000000017
+      positionAbsolute:
+        x: 1368
+        y: 2.450000000000017
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        answer: '当前客户需求信息还不完整，暂时无法进入证据检索流程。
+
+
+          请向客户进一步确认，或补充以下客户信息：
+
+          {{#1780811744060.structured_output.clarification.questions#}}'
+        desc: Answer，信息不足时追问
+        selected: false
+        title: 追问缺失信息
+        type: answer
+        variables: []
+      height: 179
+      id: '1780825963543'
+      position:
+        x: 1730
+        y: 0
+      positionAbsolute:
+        x: 1730
+        y: 0
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        desc: 基于知识库检索结果整理每个需求项的证据、引用、限制条件和证据缺口
+        model:
+          completion_params:
+            temperature: 0.2
+          mode: chat
+          name: qwen3.6-flash-2026-04-16
+          provider: langgenius/tongyi/tongyi
+        prompt_template:
+        - id: 5750eab3-7bb3-4553-a0fa-56ed5ae46339
+          role: system
+          text: "你是“证据检索 Agent”。\n\n你的目标：\n基于需求梳理 Agent 输出的结构化需求、检索问题，以及知识库检索结果，整理每个需求项对应的证据。\n\
+            \n你只负责：\n1. 阅读 structured_requirement。\n2. 阅读 search_questions_text。\n\
+            3. 阅读知识库检索结果。\n4. 按需求项整理证据、引用来源、限制条件、技术依赖、证据缺口。\n5. 输出结构化 evidence_results。\n\
+            \n你不能：\n1. 不能生成售前方案。\n2. 不能承诺产品一定支持。\n3. 不能输出最终支持等级。\n4. 不能在没有证据时自行判断支持。\n\
+            5. 不能把“需系统对接后支持”总结成“标准支持”。\n6. 不得把其他系统对接证据错误归入当前系统对接需求。例如“客服系统 / 工单系统对接”不能作为“订单系统对接”的直接证据。\n\
+            \n输入：\n\n结构化需求：\n{{#1780811744060.structured_output.structured_requirement#}}\n\
+            \n检索问题：\n{{#1780825052867.search_questions_text#}}\n\n知识库检索结果：\n{{#1780907434644.evidence_context_text#}}\n\
+            \n检索结果数量：\n{{#1780907434644.retrieval_group_count#}}\n\n处理规则：\n1. 每个检索问题都应对应一个\
+            \ evidence_result。\n2. 如果知识库结果中有直接相关证据，evidence_found = true。\n3. 如果没有直接相关证据，evidence_found\
+            \ = false，并写入 retrieval_gaps。\n4. 如果证据中出现“需对接”“需配置”“需人工确认”“需定制”“不支持”“暂不支持”等限制条件，必须写入\
+            \ limitations_or_conditions。\n5. 如果证据涉及 API、订单系统、客服系统、鉴权、字段映射、私有化部署等内容，必须写入\
+            \ technical_dependencies。\n6. 证据必须包含 source_doc 和 quote。\n7. 不得扩大证据含义。\n\
+            \n输出要求：\n只输出严格 JSON，不要输出 Markdown，不要输出解释文字。\n\n输出 JSON 格式：\n{\n  \"evidence_results\"\
+            : [\n    {\n      \"requirement_item\": \"\",\n      \"query\": \"\",\n\
+            \      \"evidence_found\": true,\n      \"evidence_quality\": \"high |\
+            \ medium | low | none | conflicting\",\n      \"support_summary\": \"\"\
+            ,\n      \"evidence\": [\n        {\n          \"source_doc\": \"\",\n\
+            \          \"quote\": \"\",\n          \"evidence_type\": \"product_capability\
+            \ | technical_solution | delivery_boundary | case_reference | faq\",\n\
+            \          \"limitations_or_conditions\": []\n        }\n      ],\n  \
+            \    \"technical_dependencies\": [],\n      \"retrieval_gaps\": [],\n\
+            \      \"possible_conflicts\": [],\n      \"recommended_next_step\": \"\
+            \"\n    }\n  ],\n  \"retrieval_summary\": {\n    \"strong_evidence_items\"\
+            : [],\n    \"weak_evidence_items\": [],\n    \"no_evidence_items\": [],\n\
+            \    \"conflicting_items\": [],\n    \"need_human_confirmation\": [],\n\
+            \    \"recommended_next_step\": \"\"\n  }\n}"
+        selected: false
+        structured_output:
+          schema:
+            properties:
+              evidence_results:
+                items:
+                  properties:
+                    evidence:
+                      items:
+                        properties:
+                          evidence_type:
+                            enum:
+                            - product_capability
+                            - technical_solution
+                            - delivery_boundary
+                            - case_reference
+                            - faq
+                            - unknown
+                            type: string
+                          limitations_or_conditions:
+                            items:
+                              type: string
+                            type: array
+                          quote:
+                            type: string
+                          source_doc:
+                            type: string
+                        required:
+                        - source_doc
+                        - quote
+                        - evidence_type
+                        - limitations_or_conditions
+                        type: object
+                      type: array
+                    evidence_found:
+                      type: boolean
+                    evidence_quality:
+                      enum:
+                      - high
+                      - medium
+                      - low
+                      - none
+                      - conflicting
+                      type: string
+                    possible_conflicts:
+                      items:
+                        type: string
+                      type: array
+                    query:
+                      type: string
+                    recommended_next_step:
+                      type: string
+                    requirement_item:
+                      type: string
+                    retrieval_gaps:
+                      items:
+                        type: string
+                      type: array
+                    support_summary:
+                      type: string
+                    technical_dependencies:
+                      items:
+                        type: string
+                      type: array
+                  required:
+                  - requirement_item
+                  - query
+                  - evidence_found
+                  - evidence_quality
+                  - support_summary
+                  - evidence
+                  - technical_dependencies
+                  - retrieval_gaps
+                  - possible_conflicts
+                  - recommended_next_step
+                  type: object
+                type: array
+              retrieval_summary:
+                properties:
+                  conflicting_items:
+                    items:
+                      type: string
+                    type: array
+                  need_human_confirmation:
+                    items:
+                      type: string
+                    type: array
+                  no_evidence_items:
+                    items:
+                      type: string
+                    type: array
+                  recommended_next_step:
+                    type: string
+                  strong_evidence_items:
+                    items:
+                      type: string
+                    type: array
+                  weak_evidence_items:
+                    items:
+                      type: string
+                    type: array
+                required:
+                - strong_evidence_items
+                - weak_evidence_items
+                - no_evidence_items
+                - conflicting_items
+                - need_human_confirmation
+                - recommended_next_step
+                type: object
+            required:
+            - evidence_results
+            - retrieval_summary
+            type: object
+        structured_output_enabled: true
+        title: 证据检索Agent
+        type: llm
+        vision:
+          enabled: false
+      height: 132
+      id: '1780900876393'
+      position:
+        x: 3322
+        y: 291.5
+      positionAbsolute:
+        x: 3322
+        y: 291.5
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        code: "import json\n\ndef main(llm_output: dict) -> dict:\n    output = llm_output\
+          \ or {}\n\n    structured_requirement = output.get(\"structured_requirement\"\
+          , {})\n    search_questions = output.get(\"search_questions\", [])\n\n \
+          \   search_question_lines = []\n    search_question_items = []\n\n    if\
+          \ isinstance(search_questions, list):\n        for item in search_questions:\n\
+          \            if not isinstance(item, dict):\n                continue\n\n\
+          \            requirement_item = item.get(\"requirement_item\", \"\").strip()\n\
+          \            query = item.get(\"query\", \"\").strip()\n\n            if\
+          \ requirement_item and query:\n                line = f\"{requirement_item}：{query}\"\
+          \n            elif query:\n                line = query\n            elif\
+          \ requirement_item:\n                line = requirement_item\n         \
+          \   else:\n                continue\n\n            search_question_lines.append(line)\n\
+          \            search_question_items.append(line)\n\n    return {\n      \
+          \  \"structured_requirement_text\": json.dumps(\n            structured_requirement,\n\
+          \            ensure_ascii=False\n        ),\n        \"search_questions_text\"\
+          : \"\\n\".join(search_question_lines),\n        \"search_question_items\"\
+          : search_question_items\n    }"
+        code_language: python3
+        outputs:
+          search_question_items:
+            children: null
+            type: array[string]
+          search_questions_text:
+            children: null
+            type: string
+          structured_requirement_text:
+            children: null
+            type: string
+        selected: false
+        title: 格式化需求与检索问题
+        type: code
+        variables:
+        - value_selector:
+          - '1780811744060'
+          - structured_output
+          value_type: object
+          variable: llm_output
+      height: 52
+      id: '1780906325781'
+      position:
+        x: 1730
+        y: 259
+      positionAbsolute:
+        x: 1730
+        y: 259
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        desc: 遍历 search_question_items
+        error_handle_mode: terminated
+        flatten_output: true
+        height: 239
+        is_parallel: false
+        iterator_input_type: array[string]
+        iterator_selector:
+        - '1780906325781'
+        - search_question_items
+        output_selector:
+        - '1780907145894'
+        - single_retrieval_text
+        output_type: array[string]
+        parallel_nums: 10
+        selected: false
+        start_node_id: 1780906677591start
+        title: 逐项检索问题循环
+        type: iteration
+        width: 808
+      height: 239
+      id: '1780906677591'
+      position:
+        x: 2072
+        y: 174.16666666666666
+      positionAbsolute:
+        x: 2072
+        y: 174.16666666666666
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 808
+      zIndex: 1
+    - data:
+        desc: ''
+        isInIteration: true
+        selected: false
+        title: ''
+        type: iteration-start
+      draggable: false
+      height: 48
+      id: 1780906677591start
+      parentId: '1780906677591'
+      position:
+        x: 60
+        y: 87
+      positionAbsolute:
+        x: 2132
+        y: 261.16666666666663
+      selectable: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom-iteration-start
+      width: 44
+      zIndex: 1002
+    - data:
+        dataset_ids:
+        - 92k7QreaprNh+XSjW1D/Z8TNbvGmE/4+gKvEa/PPX19fFNMtO+wldnTb54/ae/L8
+        desc: 每个 search_question 单独检索
+        isInIteration: true
+        isInLoop: false
+        iteration_id: '1780906677591'
+        multiple_retrieval_config:
+          reranking_enable: false
+          reranking_mode: reranking_model
+          reranking_model:
+            model: qwen3-rerank
+            provider: langgenius/tongyi/tongyi
+          score_threshold: null
+          top_k: 3
+        query_attachment_selector: []
+        query_variable_selector:
+        - '1780906677591'
+        - item
+        retrieval_mode: multiple
+        selected: false
+        title: 单需求项知识检索
+        type: knowledge-retrieval
+      height: 118
+      id: '1780907066512'
+      parentId: '1780906677591'
+      position:
+        x: 184
+        y: 60
+      positionAbsolute:
+        x: 2256
+        y: 234.16666666666666
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+      zIndex: 1002
+    - data:
+        code: "def main(query: str, retrieval_results: list) -> dict:\n    results\
+          \ = retrieval_results or []\n\n    blocks = [f\"### 检索问题\\n{query}\"]\n\n\
+          \    if not results:\n        blocks.append(\"### 检索结果\\n未召回相关知识库片段。\")\n\
+          \        return {\n            \"single_retrieval_text\": \"\\n\".join(blocks)\n\
+          \        }\n\n    blocks.append(\"### 检索结果\")\n\n    for idx, item in enumerate(results,\
+          \ start=1):\n        if not isinstance(item, dict):\n            continue\n\
+          \n        title = item.get(\"title\") or \"\"\n        content = item.get(\"\
+          content\") or \"\"\n        metadata = item.get(\"metadata\") or {}\n\n\
+          \        document_name = metadata.get(\"document_name\") or title\n    \
+          \    score = metadata.get(\"score\", \"\")\n        segment_position = metadata.get(\"\
+          segment_position\", \"\")\n        segment_id = metadata.get(\"segment_id\"\
+          , \"\")\n\n        block = f\"\"\"[证据 {idx}]\nsource_doc: {document_name}\n\
+          title: {title}\nscore: {score}\nsegment_position: {segment_position}\nsegment_id:\
+          \ {segment_id}\ncontent:\n{content}\n\"\"\"\n        blocks.append(block)\n\
+          \n    return {\n        \"single_retrieval_text\": \"\\n\\n\".join(blocks)\n\
+          \    }"
+        code_language: python3
+        desc: Code，把单次检索结果转成文本
+        isInIteration: true
+        isInLoop: false
+        iteration_id: '1780906677591'
+        outputs:
+          single_retrieval_text:
+            children: null
+            type: string
+        selected: false
+        title: 格式化单项检索结果
+        type: code
+        variables:
+        - value_selector:
+          - '1780906677591'
+          - item
+          value_type: string
+          variable: query
+        - value_selector:
+          - '1780907066512'
+          - result
+          value_type: array[object]
+          variable: retrieval_results
+      height: 80
+      id: '1780907145894'
+      parentId: '1780906677591'
+      position:
+        x: 506
+        y: 98.66666666666666
+      positionAbsolute:
+        x: 2578
+        y: 272.8333333333333
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+      zIndex: 1002
+    - data:
+        code: "def main(retrieval_texts) -> dict:\n    if retrieval_texts is None:\n\
+          \        texts = []\n    elif isinstance(retrieval_texts, list):\n     \
+          \   texts = retrieval_texts\n    else:\n        texts = [str(retrieval_texts)]\n\
+          \n    cleaned = []\n    for text in texts:\n        if isinstance(text,\
+          \ str) and text.strip():\n            cleaned.append(text.strip())\n\n \
+          \   evidence_context_text = \"\\n\\n---\\n\\n\".join(cleaned)\n\n    return\
+          \ {\n        \"evidence_context_text\": evidence_context_text,\n       \
+          \ \"retrieval_group_count\": len(cleaned)\n    }"
+        code_language: python3
+        desc: Code，把迭代结果合并成 evidence_context_text
+        outputs:
+          evidence_context_text:
+            children: null
+            type: string
+          retrieval_group_count:
+            children: null
+            type: number
+        selected: false
+        title: 合并全部检索结果
+        type: code
+        variables:
+        - value_selector:
+          - '1780906677591'
+          - output
+          value_type: array[string]
+          variable: retrieval_texts
+      height: 96
+      id: '1780907434644'
+      position:
+        x: 2980
+        y: 285.5
+      positionAbsolute:
+        x: 2980
+        y: 285.5
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        desc: 将证据转成售前可用的支持等级、交付边界、技术依赖和人工确认项
+        model:
+          completion_params:
+            temperature: 0.2
+          mode: chat
+          name: qwen3.6-flash-2026-04-16
+          provider: langgenius/tongyi/tongyi
+        prompt_template:
+        - id: e84bfeff-eb72-4dd2-b053-9256e1503adb
+          role: system
+          text: "你是“能力匹配评估 Agent”。\n\n## 目标\n\n基于证据检索 Agent 输出的 evidence_results 和\
+            \ retrieval_summary，对每个客户需求项进行能力匹配评估，判断其支持等级、交付边界、技术依赖、报价注意事项和人工确认项。\n\
+            \n你只负责：\n1. 阅读 evidence_results。\n2. 按 requirement_item 逐项判断支持等级。\n3.\
+            \ 提取交付边界、技术依赖、报价注意事项和人工确认项。\n4. 为后续方案生成提供安全表达 plan_expression。\n5. 输出\
+            \ capability_assessments 和 assessment_summary。\n\n你不能：\n1. 不能重新检索知识库。\n\
+            2. 不能生成完整售前方案。\n3. 不能承诺报价、交期、定制开发范围或最终交付结果。\n4. 不能把“可评估”说成“确定支持”。\n5.\
+            \ 不能把“需 API 对接后支持”说成“标准支持”。\n6. 不能在无证据时判断为支持。\n\n## 输入\n\n结构化需求：\n{{#1780906325781.structured_requirement_text#}}\n\
+            \n证据检索结果：\n{{#1780900876393.structured_output#}}\n\n## 支持等级定义\n\n1. standard_supported：\n\
+            \   - 有直接、明确证据证明该能力标准支持。\n   - 无明显 API 对接、定制开发、交付审批或人工确认限制。\n\n2. configurable_supported：\n\
+            \   - 有证据证明可通过配置支持。\n   - 需要知识库配置、规则配置、话术配置、流程配置或后台配置。\n\n3. integration_required：\n\
+            \   - 有证据证明可支持，但依赖客户系统、API、数据源或第三方接口。\n   - 例如订单状态查询需要客户订单系统 API 对接。\n\
+            \n4. needs_human_confirmation：\n   - 有证据显示该项可评估、需交付负责人确认、需人工确认报价、周期、部署条件或实施范围。\n\
+            \   - 包括私有化部署、定制开发、复杂系统对接、交付周期和费用确认。\n\n5. not_supported_or_no_evidence：\n\
+            \   - evidence_found = false。\n   - evidence_quality = none。\n   - 或证据明确说明不支持。\n\
+            \   - 或只有弱相关证据，不能证明当前需求项支持。\n\n## 判断规则\n\n1. 必须基于 evidence_results 判断，不得自行补充产品能力。\n\
+            2. 每个 evidence_result 必须输出一个 capability_assessment。\n3. 如果 evidence_found\
+            \ = false 或 evidence_quality = none，则 support_level = not_supported_or_no_evidence。\n\
+            4. 如果 possible_conflicts 非空，则必须加入 risk_flags，并设置 human_confirmation_required\
+            \ = true。\n5. 如果 evidence 或 limitations_or_conditions 中出现“需要 API 对接”“客户系统\
+            \ API”“开放接口”“第三方接口”“数据源对接”等，support_level 应为 integration_required。\n6.\
+            \ 如果 evidence 或 limitations_or_conditions 中出现“可配置支持”“需要配置”“知识库配置”“规则配置”等，support_level\
+            \ 应为 configurable_supported。\n7. 如果 evidence 或 limitations_or_conditions\
+            \ 中出现“可评估”“需交付负责人确认”“交付周期需确认”“费用需确认”“部署条件需确认”等，support_level 应为 needs_human_confirmation。\n\
+            8. 如果证据明确标准支持，且没有系统对接、配置、交付、费用或人工确认限制，则 support_level = standard_supported。\n\
+            9. 如果同一需求同时命中多个规则，按以下优先级判断：\n   - not_supported_or_no_evidence\n   - needs_human_confirmation\n\
+            \   - integration_required\n   - configurable_supported\n   - standard_supported\n\
+            \n## 人工确认规则\n\n以下情况必须设置 human_confirmation_required = true：\n\n1. 私有化部署。\n\
+            2. 报价、费用、交付周期、实施范围。\n3. 客户系统 API 是否开放。\n4. API 字段映射、鉴权方式、调用频率、实时性。\n5.\
+            \ 定制开发。\n6. evidence_quality = medium 或 low。\n7. possible_conflicts 非空。\n\
+            \n## plan_expression 生成规则\n\nplan_expression 是后续方案生成 Agent 可以使用的安全表达。\n\
+            \n要求：\n1. 必须基于支持等级和证据。\n2. 不能过度承诺。\n3. 对 integration_required，应表达为“可在完成系统/API\
+            \ 对接后支持”。\n4. 对 needs_human_confirmation，应表达为“可评估，需进一步确认交付条件、周期和费用”。\n\
+            5. 对 not_supported_or_no_evidence，应表达为“当前知识库未找到明确支持证据，需人工确认后再写入方案”。\n\
+            6. 对 standard_supported，可以表达为“支持该能力”。\n7. 对 configurable_supported，可以表达为“可通过配置支持该能力”。\n\
+            \n## 输出要求\n\n1. 只输出严格 JSON。\n2. 不要输出 Markdown。\n3. 不要输出解释文字。\n4. 不要在 JSON\
+            \ 外添加任何内容。\n\n## 输出 JSON 格式\n\n{\n  \"capability_assessments\": [\n  \
+            \  {\n      \"requirement_item\": \"\",\n      \"support_level\": \"standard_supported\
+            \ | configurable_supported | integration_required | needs_human_confirmation\
+            \ | not_supported_or_no_evidence\",\n      \"assessment_summary\": \"\"\
+            ,\n      \"basis\": [],\n      \"delivery_boundaries\": [],\n      \"\
+            technical_dependencies\": [],\n      \"pricing_notes\": [],\n      \"\
+            human_confirmation_required\": true,\n      \"human_confirmation_items\"\
+            : [],\n      \"risk_flags\": [],\n      \"plan_expression\": \"\",\n \
+            \     \"plan_eligible\": true\n    }\n  ],\n  \"assessment_summary\":\
+            \ {\n    \"standard_supported_items\": [],\n    \"configurable_supported_items\"\
+            : [],\n    \"integration_required_items\": [],\n    \"needs_human_confirmation_items\"\
+            : [],\n    \"not_supported_or_no_evidence_items\": [],\n    \"overall_risk_flags\"\
+            : [],\n    \"plan_eligible_items\": [],\n    \"blocked_items\": [],\n\
+            \    \"recommended_next_step\": \"\"\n  }\n}"
+        selected: false
+        structured_output:
+          schema:
+            properties:
+              assessment_summary:
+                properties:
+                  blocked_items:
+                    items:
+                      type: string
+                    type: array
+                  configurable_supported_items:
+                    items:
+                      type: string
+                    type: array
+                  integration_required_items:
+                    items:
+                      type: string
+                    type: array
+                  needs_human_confirmation_items:
+                    items:
+                      type: string
+                    type: array
+                  not_supported_or_no_evidence_items:
+                    items:
+                      type: string
+                    type: array
+                  overall_risk_flags:
+                    items:
+                      type: string
+                    type: array
+                  plan_eligible_items:
+                    items:
+                      type: string
+                    type: array
+                  recommended_next_step:
+                    type: string
+                  standard_supported_items:
+                    items:
+                      type: string
+                    type: array
+                required:
+                - standard_supported_items
+                - configurable_supported_items
+                - integration_required_items
+                - needs_human_confirmation_items
+                - not_supported_or_no_evidence_items
+                - overall_risk_flags
+                - plan_eligible_items
+                - blocked_items
+                - recommended_next_step
+                type: object
+              capability_assessments:
+                items:
+                  properties:
+                    assessment_summary:
+                      type: string
+                    basis:
+                      items:
+                        type: string
+                      type: array
+                    delivery_boundaries:
+                      items:
+                        type: string
+                      type: array
+                    human_confirmation_items:
+                      items:
+                        type: string
+                      type: array
+                    human_confirmation_required:
+                      type: boolean
+                    plan_eligible:
+                      type: boolean
+                    plan_expression:
+                      type: string
+                    pricing_notes:
+                      items:
+                        type: string
+                      type: array
+                    requirement_item:
+                      type: string
+                    risk_flags:
+                      items:
+                        type: string
+                      type: array
+                    support_level:
+                      enum:
+                      - standard_supported
+                      - configurable_supported
+                      - integration_required
+                      - needs_human_confirmation
+                      - not_supported_or_no_evidence
+                      type: string
+                    technical_dependencies:
+                      items:
+                        type: string
+                      type: array
+                  required:
+                  - requirement_item
+                  - support_level
+                  - assessment_summary
+                  - basis
+                  - delivery_boundaries
+                  - technical_dependencies
+                  - pricing_notes
+                  - human_confirmation_required
+                  - human_confirmation_items
+                  - risk_flags
+                  - plan_expression
+                  - plan_eligible
+                  type: object
+                type: array
+            required:
+            - capability_assessments
+            - assessment_summary
+            type: object
+        structured_output_enabled: true
+        title: 能力匹配评估 Agent
+        type: llm
+        vision:
+          enabled: false
+      height: 132
+      id: '1780915649779'
+      position:
+        x: 3664
+        y: 310.8333333333333
+      positionAbsolute:
+        x: 3664
+        y: 310.8333333333333
+      selected: true
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        desc: 基于结构化需求、证据和能力匹配结果生成售前初版方案
+        model:
+          completion_params:
+            temperature: 0.2
+          mode: chat
+          name: qwen3.6-flash-2026-04-16
+          provider: langgenius/tongyi/tongyi
+        prompt_template:
+        - id: f5d3fe85-6ce2-49b3-b9e9-ec4b5cc6fb76
+          role: system
+          text: "你是“方案生成 Agent”。\n\n\n## 目标\n\n\n基于结构化需求、证据检索结果和能力匹配评估结果，生成一份售前可审核的初版方案。\n\
+            \n\n你必须同时输出两部分：\n\n\n1. proposal_json：结构化方案，用于后续风险校验和系统处理。\n2. proposal_text_draft：自然语言初版方案，用于风险校验后作为最终对话输出候选内容。\n\
+            \n\n## 你只负责\n\n\n1. 整理客户需求理解。\n2. 基于能力匹配结果生成方案大纲。\n3. 将可进入方案的能力写成安全表达。\n\
+            4. 将系统对接、部署要求、交付边界和人工确认项写清楚。\n5. 输出结构化 proposal_json 和自然语言 proposal_text_draft。\n\
+            \n\n## 你不能\n\n\n1. 不能重新检索知识库。\n2. 不能重新判断能力支持等级。\n3. 不能忽略能力匹配评估中的 support_level。\n\
+            4. 不能把 integration_required 写成 standard_supported。\n5. 不能把 needs_human_confirmation\
+            \ 写成确定支持。\n6. 不能承诺报价、交期、定制开发范围或私有化部署一定可交付。\n7. 不能隐藏风险、依赖和待确认项。\n8. 不能输出最终客户承诺版本，只能输出售前可审核初稿。\n\
+            \n\n## 输入\n\n\n结构化需求：\n{{#1780906325781.structured_requirement_text#}}\n\
+            \n\n证据检索结果：\n{{#1780900876393.structured_output#}}\n\n\n能力匹配评估结果：\n{{#1780915649779.structured_output#}}\n\
+            \n\n\n## 方案生成规则\n\n\n1. 只能使用 capability_assessments 中 plan_eligible =\
+            \ true 的能力生成方案内容。\n2. 对 standard_supported：\n   - 可以写为“支持该能力”或“标准支持该能力”。\n\
+            3. 对 configurable_supported：\n   - 必须写明“可通过配置支持”。\n4. 对 integration_required：\n\
+            \   - 必须写明“需完成系统/API/数据源对接后支持”。\n   - 必须列出客户侧需要提供的信息或配合事项。\n5. 对 needs_human_confirmation：\n\
+            \   - 只能写为“可评估”或“需进一步确认”。\n   - 必须进入 human_confirmation_items。\n6. 对 not_supported_or_no_evidence：\n\
+            \   - 不得写入推荐方案主体。\n   - 只能写入 excluded_or_unconfirmed_items。\n7. 所有 human_confirmation_items\
+            \ 必须保留。\n8. 所有 risk_flags 必须进入 risk_notes。\n9. 不得生成任何确定报价、确定交期或确定交付承诺。\n\
+            10. 不得新增 capability_assessments 中不存在的能力项。\n\n\n## proposal_text_draft\
+            \ 生成规则\n\n\nproposal_text_draft 是自然语言初版方案。\n\n\n要求：\n\n\n1. 面向售前人员，而不是直接面向客户作正式承诺。\n\
+            2. 语气自然、清晰、专业。\n3. 可以使用段落和小标题。\n4. 必须保留系统对接依赖、部署边界、人工确认项和风险提示。\n5. 不得承诺报价、交期、定制开发范围或私有化部署一定可交付。\n\
+            6. 对 integration_required 能力，必须写成“完成系统/API 对接后支持”。\n7. 对 needs_human_confirmation\
+            \ 能力，必须写成“可评估，需进一步确认”。\n8. 对 not_supported_or_no_evidence 能力，不能写入方案主体，只能写入未确认事项。\n\
+            9. 不要输出“我们保证”“一定可以”“确定周期”“确定费用”“无需改造即可”等承诺性表达。\n\n\n## 文字版方案结构\n\n\nproposal_text_draft\
+            \ 建议按以下结构生成：\n\n\n1. 标题\n2. 初版方案说明\n   - 说明这是基于当前需求和知识库证据生成的初版方案，供售前团队审核。\n\
+            3. 客户需求理解\n   - 总结业务目标、目标用户、核心功能、部署诉求和系统对接诉求。\n4. 推荐方案\n   - 说明标准支持能力。\n\
+            \   - 说明需配置支持能力。\n   - 说明需系统/API 对接后支持能力。\n   - 说明需人工确认能力。\n5. 系统对接与客户配合事项\n\
+            \   - 说明需要客户提供的系统、API、鉴权、字段、测试环境等。\n6. 部署与交付边界\n   - 说明私有化部署、交付周期、费用等需进一步确认。\n\
+            7. 风险与待确认项\n   - 汇总 risk_flags 和 human_confirmation_items。\n8. 下一步建议\n\
+            \   - 给出下一步售前应确认的信息。\n\n\n## proposal_json 字段生成规则\n\n\nproposal_json.title：\n\
+            - 使用简洁标题，例如“零售 AI 客服初版方案”。\n\n\nproposal_json.customer_requirement_summary：\n\
+            - 总结客户需求，不要加入未确认信息。\n\n\nproposal_json.solution_overview：\n- 概述推荐方案，不要承诺未确认事项。\n\
+            \n\nproposal_json.recommended_capabilities：\n- 每个 plan_eligible = true\
+            \ 的 capability_assessment 生成一项。\n- 必须保留 support_level。\n- safe_expression\
+            \ 应优先使用 capability_assessment.plan_expression。\n- dependencies 来自 technical_dependencies。\n\
+            - boundaries 来自 delivery_boundaries。\n- evidence_basis 来自 basis。\n\n\n\
+            proposal_json.integration_plan：\n- 只针对 integration_required 项生成。\n- system\
+            \ 填写对接系统，例如订单系统。\n- purpose 填写对接目的，例如支持订单状态查询。\n- customer_required_inputs\
+            \ 填写 API 文档、鉴权方式、字段映射、测试环境、联调窗口等。\n- risk_note 填写不满足依赖时的风险。\n\n\nproposal_json.deployment_notes：\n\
+            - 写入部署相关说明，例如私有化部署可评估但需确认。\n\n\nproposal_json.delivery_boundaries：\n-\
+            \ 汇总所有 delivery_boundaries。\n\n\nproposal_json.human_confirmation_items：\n\
+            - 汇总所有 human_confirmation_items。\n\n\nproposal_json.risk_notes：\n- 汇总所有\
+            \ risk_flags。\n\n\nproposal_json.excluded_or_unconfirmed_items：\n- 写入\
+            \ not_supported_or_no_evidence 项，或当前无法进入方案主体的未确认项。\n\n\n## 输出要求\n\n\n\
+            1. 只输出严格 JSON。\n2. 不要输出 Markdown。\n3. 不要输出解释文字。\n4. 不要在 JSON 外添加任何内容。\n\
+            5. proposal_text_draft 字段内部可以包含换行和小标题。\n\n\n## 去重规则\n\n\n在生成 proposal_json\
+            \ 时，必须对以下数组字段进行语义去重：\n\n\n- human_confirmation_items\n- risk_notes\n-\
+            \ delivery_boundaries\n- deployment_notes\n- excluded_or_unconfirmed_items\n\
+            \n\n去重要求：\n\n\n1. 如果多个条目表达的是同一件事，只保留一个更完整、更具体的版本,例如：\n   - 不要同时保留“获取 API\
+            \ 文档”和“获取客户订单系统的 API 文档”，应合并为“获取客户订单系统 API 文档”。\n   - 不要同时保留“评估对接可行性”和“安排技术团队评估对接可行性”，应合并为“安排技术团队评估订单系统\
+            \ API 对接可行性”。\n2. 不要因为措辞不同就重复输出同一确认项。\n3. human_confirmation_items 应优先使用更具体、可执行的表达。\n\
+            4. 去重后仍需保留所有关键确认点，不得因为去重而遗漏 API 文档、鉴权方式、字段映射、测试环境、私有化部署条件、交付周期或费用确认。\n\
+            \n\n## 输出 JSON 格式\n\n\n{\n  \"proposal_json\": {\n    \"title\": \"\"\
+            ,\n    \"customer_requirement_summary\": \"\",\n    \"solution_overview\"\
+            : \"\",\n    \"recommended_capabilities\": [\n      {\n        \"capability\"\
+            : \"\",\n        \"support_level\": \"\",\n        \"description\": \"\
+            \",\n        \"safe_expression\": \"\",\n        \"dependencies\": [],\n\
+            \        \"boundaries\": [],\n        \"evidence_basis\": []\n      }\n\
+            \    ],\n    \"integration_plan\": [\n      {\n        \"system\": \"\"\
+            ,\n        \"purpose\": \"\",\n        \"dependency\": \"\",\n       \
+            \ \"customer_required_inputs\": [],\n        \"risk_note\": \"\"\n   \
+            \   }\n    ],\n    \"deployment_notes\": [],\n    \"delivery_boundaries\"\
+            : [],\n    \"human_confirmation_items\": [],\n    \"risk_notes\": [],\n\
+            \    \"excluded_or_unconfirmed_items\": []\n  },\n  \"proposal_text_draft\"\
+            : \"\"\n}"
+        selected: false
+        structured_output:
+          schema:
+            properties:
+              proposal_json:
+                properties:
+                  customer_requirement_summary:
+                    type: string
+                  delivery_boundaries:
+                    items:
+                      type: string
+                    type: array
+                  deployment_notes:
+                    items:
+                      type: string
+                    type: array
+                  excluded_or_unconfirmed_items:
+                    items:
+                      type: string
+                    type: array
+                  human_confirmation_items:
+                    items:
+                      type: string
+                    type: array
+                  integration_plan:
+                    items:
+                      properties:
+                        customer_required_inputs:
+                          items:
+                            type: string
+                          type: array
+                        dependency:
+                          type: string
+                        purpose:
+                          type: string
+                        risk_note:
+                          type: string
+                        system:
+                          type: string
+                      required:
+                      - system
+                      - purpose
+                      - dependency
+                      - customer_required_inputs
+                      - risk_note
+                      type: object
+                    type: array
+                  recommended_capabilities:
+                    items:
+                      properties:
+                        boundaries:
+                          items:
+                            type: string
+                          type: array
+                        capability:
+                          type: string
+                        dependencies:
+                          items:
+                            type: string
+                          type: array
+                        description:
+                          type: string
+                        evidence_basis:
+                          items:
+                            type: string
+                          type: array
+                        safe_expression:
+                          type: string
+                        support_level:
+                          enum:
+                          - standard_supported
+                          - configurable_supported
+                          - integration_required
+                          - needs_human_confirmation
+                          - not_supported_or_no_evidence
+                          type: string
+                      required:
+                      - capability
+                      - support_level
+                      - description
+                      - safe_expression
+                      - dependencies
+                      - boundaries
+                      - evidence_basis
+                      type: object
+                    type: array
+                  risk_notes:
+                    items:
+                      type: string
+                    type: array
+                  solution_overview:
+                    type: string
+                  title:
+                    type: string
+                required:
+                - title
+                - customer_requirement_summary
+                - solution_overview
+                - recommended_capabilities
+                - integration_plan
+                - deployment_notes
+                - delivery_boundaries
+                - human_confirmation_items
+                - risk_notes
+                - excluded_or_unconfirmed_items
+                type: object
+              proposal_text_draft:
+                type: string
+            required:
+            - proposal_json
+            - proposal_text_draft
+            type: object
+        structured_output_enabled: true
+        title: 方案生成Agent
+        type: llm
+        vision:
+          enabled: false
+      height: 132
+      id: '1780982987374'
+      position:
+        x: 4006
+        y: 330.16666666666663
+      positionAbsolute:
+        x: 4006
+        y: 330.16666666666663
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        answer: '{{#1780992432293.structured_output.final_safe_response#}}'
+        selected: false
+        title: 初版方案输出
+        type: answer
+        variables: []
+      height: 103
+      id: '1780983711598'
+      position:
+        x: 4690
+        y: 375.33333333333337
+      positionAbsolute:
+        x: 4690
+        y: 375.33333333333337
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        desc: 检查过度承诺、支持等级错误、系统依赖遗漏和人工确认项遗漏
+        model:
+          completion_params:
+            temperature: 0.1
+          mode: chat
+          name: qwen3.6-flash-2026-04-16
+          provider: langgenius/tongyi/tongyi
+        prompt_template:
+        - id: 7480613a-1485-44ad-adaf-f35936f3274b
+          role: system
+          text: "你是“风险校验 Agent”。\n\n## 目标\n\n你负责检查方案生成 Agent 输出的售前初版方案，识别其中是否存在过度承诺、无证据能力、遗漏依赖、遗漏人工确认项、支持等级表达错误或不安全表述。\n\
+            \n你需要输出：\n\n1. risk_check_result：结构化风险检查结果。\n2. final_safe_response：经过风险修正后的最终安全方案文本。\n\
+            \nfinal_safe_response 将作为最终 Answer 展示给售前人员。\n\n## 产品定位\n\n本系统是面向销售、售前顾问和解决方案团队的内部\
+            \ Copilot。\n\n直接使用者是售前人员，不是终端客户本人。\n\nfinal_safe_response 应面向售前人员，用于内部审核、客户沟通准备和方案准备，不是正式客户承诺文件。\n\
+            \n## 输入\n\n结构化需求：\n{{#1780906325781.structured_requirement_text#}}\n\n\
+            证据检索结果：\n{{#1780900876393.structured_output#}}\n\n能力匹配评估结果：\n{{#1780915649779.structured_output#}}\n\
+            \n方案结构化结果：\n{{#1780982987374.structured_output.proposal_json#}}\n\n方案文字初稿：\n\
+            {{#1780982987374.structured_output.proposal_text_draft#}}\n\n## 你只负责\n\
+            \n1. 检查方案文字初稿是否存在风险。\n2. 检查方案文字是否与能力匹配结果一致。\n3. 检查方案文字是否遗漏系统依赖、交付边界和人工确认项。\n\
+            4. 检查方案文字是否出现过度承诺。\n5. 对不安全表达进行改写。\n6. 输出最终安全版本 final_safe_response。\n\
+            \n## 你不能\n\n1. 不能重新检索知识库。\n2. 不能新增能力匹配结果中不存在的能力。\n3. 不能把 not_supported_or_no_evidence\
+            \ 写成支持。\n4. 不能把 integration_required 写成标准支持。\n5. 不能把 needs_human_confirmation\
+            \ 写成确定可交付。\n6. 不能承诺报价、费用、交付周期、上线日期或私有化部署一定可交付。\n7. 不能删除关键风险和待确认项。\n8.\
+            \ 不能输出面向客户的正式承诺口吻。\n\n## 检查规则\n\n### 1. 支持等级一致性检查\n\n你必须根据 capability_assessments\
+            \ 检查 proposal_text_draft。\n\n如果 support_level = standard_supported：\n\
+            - 可以表达为“支持该能力”。\n- 不能扩大为未评估的高级能力。\n\n如果 support_level = configurable_supported：\n\
+            - 必须表达为“可通过配置支持”。\n- 必须保留配置前提。\n\n如果 support_level = integration_required：\n\
+            - 必须表达为“完成系统/API/数据源对接后支持”。\n- 必须保留客户侧依赖。\n- 必须保留 API 文档、鉴权方式、字段映射、测试环境、联调等确认事项。\n\
+            - 不能写成“标准支持”“开箱即用”“无需对接即可支持”。\n\n如果 support_level = needs_human_confirmation：\n\
+            - 必须表达为“可评估，需进一步确认”。\n- 必须保留人工确认事项。\n- 不能写成“确定支持”“可直接交付”“已确认可交付”。\n\n\
+            如果 support_level = not_supported_or_no_evidence：\n- 不得写入推荐方案主体。\n- 只能写入未确认或暂不纳入方案的说明。\n\
+            - 不能写成支持能力。\n\n### 2. 过度承诺检查\n\n以下表达属于高风险，必须改写或删除：\n\n- 保证上线\n- 一定可以\n\
+            - 确定支持\n- 确定交付\n- 确定周期\n- 确定费用\n- 私有化部署可直接交付\n- 无需客户系统改造\n- 开箱即用支持订单查询\n\
+            - 实时查询一定可用\n- 不需要客户配合即可完成\n- 自动完成系统对接\n- 已确认报价\n- 已确认交付周期\n\n推荐改写：\n\n\
+            - “可评估，需进一步确认”\n- “完成系统/API 对接后支持”\n- “需客户提供 API 文档、鉴权方式、字段映射和测试环境后进一步评估”\n\
+            - “具体部署条件、交付周期和费用需由交付负责人确认”\n- “当前不构成最终交付承诺”\n\n### 3. 系统对接风险检查\n\n如果方案涉及订单查询、物流查询、CRM\
+            \ 查询、工单查询、用户信息查询等外部系统数据能力：\n\n必须保留：\n\n- 需要客户系统开放 API\n- 需要 API 文档\n-\
+            \ 需要鉴权方式\n- 需要字段映射\n- 需要测试环境或联调条件\n- 若客户系统不开放 API，则不能承诺实时查询或自动对接\n\n如果\
+            \ proposal_text_draft 遗漏上述内容，你必须在 final_safe_response 中补回。\n\n### 4. 私有化部署风险检查\n\
+            \n如果方案涉及私有化部署：\n\n必须保留：\n\n- 仅可评估\n- 需交付负责人确认\n- 需确认部署环境\n- 需确认交付周期\n\
+            - 需确认费用或报价\n- 不能自动承诺\n\n如果 proposal_text_draft 写成确定交付，必须改写。\n\n### 5.\
+            \ 人工确认项检查\n\n你必须检查 capability_assessments 和 proposal_json 中的 human_confirmation_items\
+            \ 是否已经在 proposal_text_draft 中体现。\n\n如果缺失，必须在 final_safe_response 的“风险与待确认项”或“下一步建议”中补充。\n\
+            \n### 6. 风险项检查\n\n你必须检查 capability_assessments 和 proposal_json 中的 risk_notes\
+            \ / risk_flags 是否已经在 proposal_text_draft 中体现。\n\n如果缺失，必须在 final_safe_response\
+            \ 中补充。\n\n### 7. 方案主体检查\n\nfinal_safe_response 应保留自然语言方案结构，但必须安全。\n\n\
+            建议结构：\n\n1. 标题\n2. 初版方案说明\n3. 客户需求理解\n4. 推荐方案\n5. 系统对接与客户配合事项\n6. 部署与交付边界\n\
+            7. 风险与待确认项\n8. 下一步建议\n\n## 风险等级判断\n\nrisk_level 取值：\n\n- low：没有明显风险，最多只有轻微措辞优化。\n\
+            - medium：存在依赖或待确认项表达不完整，但可通过改写修复。\n- high：存在严重过度承诺、无证据能力写入方案主体、支持等级明显错误。\n\
+            - blocked：存在无法修复的严重问题，不应输出方案。\n\nmust_block_output 判断：\n\n- 如果出现 unsupported\
+            \ claim 且无法根据能力匹配结果修复，must_block_output = true。\n- 如果出现明显违法、违规或严重虚假承诺，must_block_output\
+            \ = true。\n- 一般售前措辞问题、遗漏依赖、重复待确认项，不需要 block，只需要修正。\n\n## final_safe_response\
+            \ 生成规则\n\n1. final_safe_response 必须是完整自然语言方案。\n2. final_safe_response\
+            \ 面向售前人员。\n3. final_safe_response 不要输出 JSON。\n4. final_safe_response 不要说“以下是我修改后的内容”。\n\
+            5. final_safe_response 可以保留标题和小标题。\n6. final_safe_response 必须删除或改写所有高风险承诺表达。\n\
+            7. final_safe_response 必须补全遗漏的依赖、风险和人工确认项。\n8. final_safe_response 不得新增未被证据或能力匹配支持的能力。\n\
+            9. final_safe_response 应比 proposal_text_draft 更安全、更适合最终输出。\n\n## 输出要求\n\
+            \n1. 只输出严格 JSON。\n2. 不要输出 Markdown 包裹 JSON。\n3. 不要在 JSON 外输出任何解释文字。\n\
+            4. final_safe_response 字段内部可以包含 Markdown 文本。\n\n## 输出 JSON 格式\n\n{\n \
+            \ \"risk_check_result\": {\n    \"passed\": true,\n    \"risk_level\"\
+            : \"low\",\n    \"must_block_output\": false,\n    \"issues\": [\n   \
+            \   {\n        \"issue_type\": \"over_commitment\",\n        \"severity\"\
+            : \"medium\",\n        \"original_text\": \"\",\n        \"reason\": \"\
+            \",\n        \"suggested_fix\": \"\"\n      }\n    ],\n    \"summary\"\
+            : \"\"\n  },\n  \"final_safe_response\": \"\"\n}"
+        selected: false
+        structured_output:
+          schema:
+            properties:
+              final_safe_response:
+                type: string
+              risk_check_result:
+                properties:
+                  issues:
+                    items:
+                      properties:
+                        issue_type:
+                          enum:
+                          - over_commitment
+                          - unsupported_claim
+                          - support_level_mismatch
+                          - missing_dependency
+                          - missing_human_confirmation
+                          - missing_risk_note
+                          - unsafe_expression
+                          - evidence_mismatch
+                          - format_issue
+                          - other
+                          type: string
+                        original_text:
+                          type: string
+                        reason:
+                          type: string
+                        severity:
+                          enum:
+                          - low
+                          - medium
+                          - high
+                          type: string
+                        suggested_fix:
+                          type: string
+                      required:
+                      - issue_type
+                      - severity
+                      - original_text
+                      - reason
+                      - suggested_fix
+                      type: object
+                    type: array
+                  must_block_output:
+                    type: boolean
+                  passed:
+                    type: boolean
+                  risk_level:
+                    enum:
+                    - low
+                    - medium
+                    - high
+                    - blocked
+                    type: string
+                  summary:
+                    type: string
+                required:
+                - passed
+                - risk_level
+                - must_block_output
+                - issues
+                - summary
+                type: object
+            required:
+            - risk_check_result
+            - final_safe_response
+            type: object
+        structured_output_enabled: true
+        title: 风险校验Agent
+        type: llm
+        vision:
+          enabled: false
+      height: 132
+      id: '1780992432293'
+      position:
+        x: 4348
+        y: 349.5
+      positionAbsolute:
+        x: 4348
+        y: 349.5
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    viewport:
+      x: -1861.2644575527247
+      y: 117.42495160736922
+      zoom: 0.636808580501628
+  rag_pipeline_variables: []
+
